@@ -42,6 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -96,6 +97,7 @@ const EMPTY_FORM: OperatorForm = {
 export default function OperatorsPage() {
   const t = useTranslations("operator");
   const tc = useTranslations("common");
+  const toast = useToast();
 
   const [operators, setOperators] = useState<OperatorRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,10 +109,6 @@ export default function OperatorsPage() {
   const [editing, setEditing] = useState<OperatorRow | null>(null);
   const [form, setForm] = useState<OperatorForm>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
-
-  // Delete dialog
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleting, setDeleting] = useState<OperatorRow | null>(null);
 
   // Fetch ---------------------------------------------------------------
   const fetchOperators = useCallback(async () => {
@@ -213,21 +211,35 @@ export default function OperatorsPage() {
     }
   }
 
-  async function handleDelete() {
-    if (!deleting) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/operators/${deleting.id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setDeleteDialogOpen(false);
-        setDeleting(null);
-        fetchOperators();
-      }
-    } finally {
-      setSaving(false);
-    }
+  // Delete — optimistic + undo toast
+  function handleDelete(op: OperatorRow) {
+    const snapshot = operators;
+    setOperators((prev) => prev.filter((x) => x.id !== op.id));
+    const warning =
+      op.booking_count > 0
+        ? t("deleteWarning", { count: op.booking_count })
+        : op.name;
+    toast.show({
+      message: tc("deleted"),
+      description: warning,
+      undo: {
+        onUndo: () => {
+          setOperators(snapshot);
+          toast.show({ message: tc("undone"), variant: "info" });
+        },
+        onCommit: async () => {
+          try {
+            const res = await fetch(`/api/operators/${op.id}`, {
+              method: "DELETE",
+            });
+            if (!res.ok) throw new Error();
+          } catch {
+            setOperators(snapshot);
+            toast.show({ message: tc("actionFailed"), variant: "error" });
+          }
+        },
+      },
+    });
   }
 
   // -----------------------------------------------------------------------
@@ -345,10 +357,7 @@ export default function OperatorsPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               variant="destructive"
-                              onClick={() => {
-                                setDeleting(op);
-                                setDeleteDialogOpen(true);
-                              }}
+                              onClick={() => handleDelete(op)}
                             >
                               <Trash2 className="mr-1.5 size-3.5" />
                               {tc("delete")}
@@ -505,50 +514,6 @@ export default function OperatorsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteDialogOpen(false);
-            setDeleting(null);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{tc("delete")}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {t("deleteConfirm", { name: deleting?.name ?? "" })}
-            {deleting && deleting.booking_count > 0 && (
-              <span className="mt-2 block text-yellow-700 dark:text-yellow-400">
-                {t("deleteWarning", { count: deleting.booking_count })}
-              </span>
-            )}
-          </p>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false);
-                setDeleting(null);
-              }}
-              disabled={saving}
-            >
-              {tc("cancel")}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={saving}
-            >
-              {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-              {tc("delete")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

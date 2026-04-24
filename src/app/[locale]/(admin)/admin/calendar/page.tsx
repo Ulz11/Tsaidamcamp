@@ -20,6 +20,7 @@ import {
   CalendarRange,
   ChevronLeft,
   ChevronRight,
+  Home,
   Loader2,
   Users,
 } from "lucide-react";
@@ -27,6 +28,9 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+// ── Types ───────────────────────────────────────────────────────────────────
 
 type BookingRow = {
   id: string;
@@ -41,14 +45,27 @@ type BookingRow = {
   guide_name: string | null;
   notes: string | null;
   operators?: { name: string } | null;
+  booking_gers?: { ger_id: string }[];
 };
 
-// Tailwind color classes per booking source
+type Bed = { size: string; count: number };
+
+type GerRow = {
+  id: string;
+  name: string;
+  type: string;
+  capacity: number;
+  sort_order: number | null;
+  beds?: Bed[] | null;
+};
+
+// ── Colors ──────────────────────────────────────────────────────────────────
+
 const SOURCE_BAR: Record<BookingRow["source"], string> = {
-  operator: "bg-blue-500/80 hover:bg-blue-500 text-white",
-  website: "bg-green-500/80 hover:bg-green-500 text-white",
-  phone: "bg-orange-500/80 hover:bg-orange-500 text-white",
-  walkin: "bg-gray-500/80 hover:bg-gray-500 text-white",
+  operator: "bg-blue-500/85 hover:bg-blue-500 text-white",
+  website: "bg-green-500/85 hover:bg-green-500 text-white",
+  phone: "bg-orange-500/85 hover:bg-orange-500 text-white",
+  walkin: "bg-gray-500/85 hover:bg-gray-500 text-white",
 };
 
 const SOURCE_DOT: Record<BookingRow["source"], string> = {
@@ -58,12 +75,15 @@ const SOURCE_DOT: Record<BookingRow["source"], string> = {
   walkin: "bg-gray-500",
 };
 
+// ── Page ────────────────────────────────────────────────────────────────────
+
 export default function CalendarPage() {
   const t = useTranslations("admin.calendar");
   const tb = useTranslations("booking");
 
   const [current, setCurrent] = useState<Date>(() => startOfMonth(new Date()));
   const [bookings, setBookings] = useState<BookingRow[]>([]);
+  const [gers, setGers] = useState<GerRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const monthStart = useMemo(() => startOfMonth(current), [current]);
@@ -73,16 +93,20 @@ export default function CalendarPage() {
     [monthStart, monthEnd]
   );
 
-  const fetchBookings = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch bookings whose check_in falls on or before month-end.
-      // We'll then client-filter to also require check_out >= month-start.
       const params = new URLSearchParams();
       params.set("to", format(monthEnd, "yyyy-MM-dd"));
-      const res = await fetch(`/api/bookings?${params.toString()}`);
-      if (res.ok) {
-        const data = (await res.json()) as BookingRow[];
+      params.set("include", "gers");
+
+      const [bookingsRes, gersRes] = await Promise.all([
+        fetch(`/api/bookings?${params.toString()}`),
+        fetch(`/api/gers`),
+      ]);
+
+      if (bookingsRes.ok) {
+        const data = (await bookingsRes.json()) as BookingRow[];
         const filtered = data.filter(
           (b) =>
             b.status !== "cancelled" &&
@@ -90,16 +114,46 @@ export default function CalendarPage() {
         );
         setBookings(filtered);
       }
+      if (gersRes.ok) {
+        const data = (await gersRes.json()) as GerRow[];
+        // Sort by sort_order (nulls last), then by name
+        const sorted = [...data].sort((a, b) => {
+          const ao = a.sort_order ?? 1e9;
+          const bo = b.sort_order ?? 1e9;
+          if (ao !== bo) return ao - bo;
+          return a.name.localeCompare(b.name);
+        });
+        setGers(sorted);
+      }
     } finally {
       setLoading(false);
     }
   }, [monthStart, monthEnd]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    fetchData();
+  }, [fetchData]);
 
   const today = new Date();
+
+  // ── Group bookings by ger ──────────────────────────────────────────────────
+  const byGer = useMemo(() => {
+    const map = new Map<string, BookingRow[]>();
+    const unassigned: BookingRow[] = [];
+    for (const b of bookings) {
+      const gerIds = (b.booking_gers ?? []).map((x) => x.ger_id).filter(Boolean);
+      if (gerIds.length === 0) {
+        unassigned.push(b);
+        continue;
+      }
+      for (const gid of gerIds) {
+        const arr = map.get(gid) ?? [];
+        arr.push(b);
+        map.set(gid, arr);
+      }
+    }
+    return { map, unassigned };
+  }, [bookings]);
 
   const monthStats = useMemo(() => {
     const arrivals = bookings.filter((b) => {
@@ -113,6 +167,73 @@ export default function CalendarPage() {
   const dayCount = days.length;
   const gridTemplate = {
     gridTemplateColumns: `16rem repeat(${dayCount}, minmax(2.25rem, 1fr))`,
+  };
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+
+  const bookingBar = (b: BookingRow, rowSlot: number = 1) => {
+    const ci = parseISO(b.check_in);
+    const co = parseISO(b.check_out);
+    const visibleStart = maxDate([ci, monthStart]);
+    const visibleEnd = minDate([co, monthEnd]);
+    const startCol =
+      differenceInCalendarDays(visibleStart, monthStart) + 2;
+    const span = Math.max(
+      1,
+      differenceInCalendarDays(visibleEnd, visibleStart) + 1
+    );
+    const total = (b.tourist_count || 0) + (b.staff_count || 0);
+    const label =
+      b.trip_code || b.operators?.name || b.guide_name || "—";
+    const title = [
+      label,
+      `${format(ci, "MMM d")} → ${format(co, "MMM d")}`,
+      `${total} ${tb("touristCount")}/${tb("staffCount")}`,
+      b.notes ?? "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    return (
+      <div
+        key={b.id}
+        className={cn(
+          "relative my-1 flex items-center overflow-hidden rounded-md px-2 text-xs font-medium transition-colors",
+          SOURCE_BAR[b.source],
+          b.status === "tentative" && "opacity-70 ring-1 ring-dashed ring-white/40"
+        )}
+        style={{
+          gridColumn: `${startCol} / span ${span}`,
+          gridRow: rowSlot,
+          height: "1.6rem",
+          alignSelf: "center",
+        }}
+        title={title}
+      >
+        <span className="truncate">
+          <span className={cn("mr-1.5 inline-block size-1.5 rounded-full align-middle", SOURCE_DOT[b.source])} />
+          {label}
+          {total > 0 && <span className="ml-1 opacity-80">· {total}</span>}
+        </span>
+      </div>
+    );
+  };
+
+  const dayBackdrop = () =>
+    days.map((d, idx) => (
+      <div
+        key={idx}
+        className={cn(
+          "h-10 border-r",
+          isWeekend(d) && "bg-muted/20",
+          isSameDay(d, today) && "bg-primary/5"
+        )}
+      />
+    ));
+
+  const gerCapacity = (g: GerRow) => {
+    const beds = (g.beds ?? []) as Bed[];
+    const bedsTotal = beds.reduce((s, b) => s + (b.count || 0), 0);
+    return bedsTotal > 0 ? bedsTotal : g.capacity;
   };
 
   return (
@@ -195,7 +316,7 @@ export default function CalendarPage() {
             <div className="flex items-center justify-center py-16">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
-          ) : bookings.length === 0 ? (
+          ) : gers.length === 0 && byGer.unassigned.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
               <CalendarRange className="mb-2 size-10 opacity-40" />
               <p>{t("empty")}</p>
@@ -209,7 +330,7 @@ export default function CalendarPage() {
                   style={gridTemplate}
                 >
                   <div className="border-r p-2 font-medium">
-                    {t("booking")}
+                    {t("gerColumn")}
                   </div>
                   {days.map((d) => {
                     const isToday = isSameDay(d, today);
@@ -217,14 +338,14 @@ export default function CalendarPage() {
                     return (
                       <div
                         key={d.toISOString()}
-                        className={[
+                        className={cn(
                           "border-r py-1 text-center tabular-nums",
                           isToday
                             ? "bg-primary/10 font-bold text-primary"
                             : weekend
-                            ? "bg-muted/40 text-muted-foreground"
-                            : "text-muted-foreground",
-                        ].join(" ")}
+                              ? "bg-muted/40 text-muted-foreground"
+                              : "text-muted-foreground"
+                        )}
                       >
                         <div className="text-[10px] uppercase leading-none">
                           {format(d, "EEE")[0]}
@@ -237,97 +358,93 @@ export default function CalendarPage() {
                   })}
                 </div>
 
-                {/* Rows: one per booking */}
-                {bookings.map((b) => {
-                  const ci = parseISO(b.check_in);
-                  const co = parseISO(b.check_out);
-                  const visibleStart = maxDate([ci, monthStart]);
-                  const visibleEnd = minDate([co, monthEnd]);
-                  const startCol =
-                    differenceInCalendarDays(visibleStart, monthStart) + 2; // +2: grid is 1-indexed & first column is the label
-                  const span = Math.max(
-                    1,
-                    differenceInCalendarDays(visibleEnd, visibleStart) + 1
-                  );
-                  const total =
-                    (b.tourist_count || 0) + (b.staff_count || 0);
-                  const label =
-                    b.trip_code ||
-                    b.operators?.name ||
-                    b.guide_name ||
-                    "—";
-                  const title = [
-                    label,
-                    `${format(ci, "MMM d")} → ${format(co, "MMM d")}`,
-                    `${total} ${tb("touristCount")}/${tb("staffCount")}`,
-                    b.notes ?? "",
-                  ]
-                    .filter(Boolean)
-                    .join("\n");
+                {/* Per-ger rows */}
+                {gers.length === 0 ? (
+                  <div className="p-6 text-center text-sm text-muted-foreground">
+                    {t("noGers")}
+                  </div>
+                ) : (
+                  gers.map((g) => {
+                    const list = byGer.map.get(g.id) ?? [];
+                    const cap = gerCapacity(g);
+                    return (
+                      <div
+                        key={g.id}
+                        className="grid items-center border-b hover:bg-muted/20"
+                        style={gridTemplate}
+                      >
+                        {/* Ger label cell */}
+                        <div className="truncate border-r px-2 py-1.5 text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <Home className="size-3.5 shrink-0 text-muted-foreground" />
+                            <span className="truncate font-medium">{g.name}</span>
+                          </div>
+                          <div className="truncate text-[10px] text-muted-foreground">
+                            {g.type} · {cap} {t("capacity")}
+                          </div>
+                        </div>
 
-                  return (
+                        {/* Day cells backdrop */}
+                        {dayBackdrop()}
+
+                        {/* Booking bars for this ger */}
+                        {list.map((b) => bookingBar(b))}
+                      </div>
+                    );
+                  })
+                )}
+
+                {/* Unassigned section */}
+                {byGer.unassigned.length > 0 && (
+                  <>
                     <div
-                      key={b.id}
-                      className="grid items-center border-b hover:bg-muted/30"
+                      className="grid border-t border-b bg-muted/40 text-xs"
                       style={gridTemplate}
                     >
-                      {/* Label cell */}
-                      <div className="truncate border-r px-2 py-1.5 text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={[
-                              "size-2 shrink-0 rounded-full",
-                              SOURCE_DOT[b.source],
-                            ].join(" ")}
-                          />
-                          <span className="truncate font-medium">{label}</span>
-                        </div>
-                        {b.operators?.name && b.trip_code && (
-                          <div className="truncate text-[10px] text-muted-foreground">
-                            {b.operators.name}
-                          </div>
-                        )}
+                      <div className="border-r px-2 py-1.5 font-semibold uppercase tracking-wide text-muted-foreground">
+                        {t("unassigned")}
                       </div>
-
-                      {/* Day cells — empty backdrop for grid lines */}
-                      {days.map((d, idx) => (
-                        <div
-                          key={idx}
-                          className={[
-                            "h-10 border-r",
-                            isWeekend(d) ? "bg-muted/20" : "",
-                            isSameDay(d, today) ? "bg-primary/5" : "",
-                          ].join(" ")}
-                        />
-                      ))}
-
-                      {/* Booking bar, absolute-positioned via grid-column */}
                       <div
-                        className={[
-                          "relative my-1 flex items-center overflow-hidden rounded-md px-2 text-xs font-medium transition-colors",
-                          SOURCE_BAR[b.source],
-                          b.status === "tentative"
-                            ? "opacity-70 ring-1 ring-dashed ring-white/40"
-                            : "",
-                        ].join(" ")}
-                        style={{
-                          gridColumn: `${startCol} / span ${span}`,
-                          gridRow: 1,
-                          height: "1.75rem",
-                          alignSelf: "center",
-                        }}
-                        title={title}
+                        className="px-2 py-1.5 text-muted-foreground"
+                        style={{ gridColumn: `2 / span ${dayCount}` }}
                       >
-                        <span className="truncate">
-                          {label}
-                          {total > 0 && (
-                            <span className="ml-1 opacity-80">· {total}</span>
-                          )}
-                        </span>
+                        {t("unassignedHint")}
                       </div>
                     </div>
-                  );
-                })}
+                    {byGer.unassigned.map((b) => {
+                      const label =
+                        b.trip_code || b.operators?.name || b.guide_name || "—";
+                      return (
+                        <div
+                          key={b.id}
+                          className="grid items-center border-b hover:bg-muted/20"
+                          style={gridTemplate}
+                        >
+                          <div className="truncate border-r px-2 py-1.5 text-xs">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={cn(
+                                  "size-2 shrink-0 rounded-full",
+                                  SOURCE_DOT[b.source]
+                                )}
+                              />
+                              <span className="truncate font-medium">
+                                {label}
+                              </span>
+                            </div>
+                            {b.operators?.name && b.trip_code && (
+                              <div className="truncate text-[10px] text-muted-foreground">
+                                {b.operators.name}
+                              </div>
+                            )}
+                          </div>
+                          {dayBackdrop()}
+                          {bookingBar(b)}
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
               </div>
             </div>
           )}

@@ -18,13 +18,14 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 | Undo-toast delete (gers) | ✅ | 6s window, optimistic |
 | Quick-book button per ger row | ✅ | Auto-opens booking dialog |
 | Slim booking dialogs (Essentials + Advanced) | ✅ | Applied to bookings-list + gers page |
-| Undo-toast delete (operators) | ⬜ | Same pattern as bookings |
-| Undo-toast delete (guests) | ⬜ | Same pattern as bookings |
-| Undo-toast delete (finance/transactions) | ⬜ | Same pattern as bookings |
-| Guests management page | ⬜ | Basic CRUD |
-| Finance page improvements | ⬜ | Better charts, monthly breakdown |
-| Calendar view | ⬜ | Month/week view of all bookings across gers |
-| Notifications / alerts | ⬜ | Check-in today, overdue payments |
+| Undo-toast delete (operators) | ✅ | Optimistic + 6s undo, cascade warning in toast |
+| Undo-toast delete (guests) | ✅ | Optimistic + 6s undo |
+| Undo-toast delete (finance/transactions) | ✅ | Signed amount + description in toast |
+| Guests management page | ✅ | Basic CRUD (page already existed) |
+| Dashboard UI/UX redesign | ✅ | Colored stat cards, progress bar, enriched lists |
+| Calendar view (per-ger Gantt) | ✅ | Month view, one row per ger + Unassigned section |
+| Finance page improvements | ✅ | Accent-badge KPIs + MoM delta, area chart, income pie, monthly breakdown list |
+| Notifications / alerts | ✅ | Header bell: arrivals/departures today + overdue payments, 2-min polling |
 | Bulk operations | ⬜ | Multi-select bookings for status updates |
 
 ### Multi-language
@@ -63,12 +64,12 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 ---
 
 ## Next Up (Priority Order)
-1. ⬜ Replace delete dialogs in operators/guests/finance with undo-toast
-2. ⬜ Calendar view for all ger bookings
-3. ⬜ Guests management page
-4. ⬜ Public landing page
-5. ⬜ Vercel deployment setup
+1. ⬜ Bulk operations (multi-select bookings for status updates)
+2. ⬜ Public landing page
+3. ⬜ Vercel deployment setup
+4. ⬜ Supabase Storage for ger photos
+5. ⬜ i18n audit (find missing keys across all admin pages)
 
 ---
 
-*Last updated: 2026-04-20*
+*Last updated: 2026-04-21 (Session 5 — calendar + finance + alerts)*
