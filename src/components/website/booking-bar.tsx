@@ -17,8 +17,14 @@ export function BookingBar() {
   const t = useTranslations("website.quickBook");
 
   // Sensible defaults: today → tomorrow, 2 guests.
-  const today = new Date().toISOString().slice(0, 10);
-  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  // `new Date()` / `Date.now()` are impure — we wrap them in lazy
+  // initializers so they run exactly once (mount), never on re-render.
+  // That keeps the React purity rule happy and avoids drift if the
+  // component re-mounts across midnight.
+  const [today] = useState(() => new Date().toISOString().slice(0, 10));
+  const [tomorrow] = useState(() =>
+    new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
+  );
 
   const [checkIn, setCheckIn] = useState(today);
   const [checkOut, setCheckOut] = useState(tomorrow);

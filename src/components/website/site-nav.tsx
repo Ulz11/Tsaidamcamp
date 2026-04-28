@@ -54,17 +54,17 @@ export function SiteNav() {
 
         <div className="hidden items-center gap-9 md:flex">
           {links.map((l) => (
-            <a
+            <Link
               key={l.href}
               href={l.href}
               className="text-[13px] font-medium uppercase tracking-[0.18em] text-tsaidam-cream/85 transition-colors hover:text-tsaidam-cream"
             >
               {l.label}
-            </a>
+            </Link>
           ))}
         </div>
 
-        <a
+        <Link
           href="/#book"
           className={[
             "inline-flex items-center justify-center rounded-full px-5 py-2 text-[12px] font-medium uppercase tracking-[0.22em] transition-all duration-300",
@@ -74,7 +74,7 @@ export function SiteNav() {
           ].join(" ")}
         >
           {t("booking")}
-        </a>
+        </Link>
       </nav>
     </header>
   );
