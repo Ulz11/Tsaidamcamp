@@ -82,7 +82,6 @@ type Operator = { id: string; name: string };
 
 export default function UploadPdfPage() {
   const t = useTranslations("admin.uploadPdf");
-  const tc = useTranslations("common");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

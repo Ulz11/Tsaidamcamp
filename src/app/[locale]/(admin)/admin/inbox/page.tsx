@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { format } from "date-fns";
 import {
-  FileText,
   Inbox,
   Loader2,
   Mail,

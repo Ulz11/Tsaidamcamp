@@ -337,14 +337,38 @@
   "website": {
     "hero": {
       "title": "Tsaidam Tourist Camp",
-      "subtitle": "In the heart of Mongolia's stunning nature"
+      "subtitle": "In the heart of Mongolia's stunning nature",
+      "comingSoon": "Online booking opens soon — please contact us directly for now.",
+      "headline": "Experience Serenity at Tsaidam",
+      "tagline": "A quiet luxury of canvas, fire, and open sky — minutes from the steppe, miles from the noise.",
+      "cta": "Begin Your Journey"
     },
     "nav": {
       "home": "Home",
       "gers": "Accommodations",
       "programs": "Programs",
       "gallery": "Gallery",
-      "booking": "Book Now"
+      "booking": "Book Now",
+      "story": "Our Story",
+      "contact": "Contact"
+    },
+    "quickBook": {
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "guests": "Guests",
+      "guest": "{count, plural, =1 {# guest} other {# guests}}",
+      "search": "Search",
+      "title": "Reserve your stay"
+    },
+    "stay": {
+      "eyebrow": "Accommodations",
+      "title": "Where you'll rest",
+      "subtitle": "A small collection of gers and cabins, each one shaped to feel like the landscape that holds it.",
+      "perNight": "per night",
+      "from": "from",
+      "viewDetails": "View details",
+      "capacity": "{count} guests",
+      "empty": "Accommodations are being prepared — check back soon."
     },
     "booking": {
       "title": "Online Booking",
@@ -357,6 +381,79 @@
       "submit": "Submit Booking",
       "success": "Booking submitted successfully!",
       "successMessage": "We will contact you shortly."
+    },
+    "footer": {
+      "tagline": "Mongolian glamping, by the salt lake.",
+      "rights": "All rights reserved."
+    }
+  },
+  "cms": {
+    "title": "Website",
+    "subtitle": "Manage gallery, promotions, and news for the public site.",
+    "tabs": {
+      "gallery": "Gallery",
+      "promotions": "Promotions",
+      "news": "News"
+    },
+    "common": {
+      "published": "Published",
+      "active": "Active",
+      "draft": "Draft",
+      "live": "Live",
+      "preview": "Preview",
+      "sortOrder": "Order",
+      "image": "Image"
+    },
+    "gallery": {
+      "title": "Gallery images",
+      "addImage": "Add image",
+      "editImage": "Edit image",
+      "url": "Image URL",
+      "urlHint": "Paste a public URL (Supabase Storage, Cloudinary, etc).",
+      "urlInvalid": "Must be a valid URL",
+      "captionMn": "Caption (MN)",
+      "captionEn": "Caption (EN)",
+      "category": "Category",
+      "categoryHint": "Optional grouping, e.g. gers / nature / food.",
+      "empty": "No images yet — add your first.",
+      "deleted": "Image removed"
+    },
+    "promotions": {
+      "title": "Promotions",
+      "addPromotion": "Add promotion",
+      "editPromotion": "Edit promotion",
+      "titleMn": "Title (MN)",
+      "titleEn": "Title (EN)",
+      "descriptionMn": "Description (MN)",
+      "descriptionEn": "Description (EN)",
+      "discountLabel": "Badge label",
+      "discountLabelHint": "e.g. 20% OFF, Family deal",
+      "startsOn": "Starts on",
+      "endsOn": "Ends on",
+      "imageUrl": "Image URL",
+      "empty": "No promotions yet.",
+      "deleted": "Promotion removed",
+      "titleRequired": "Title (MN) is required"
+    },
+    "news": {
+      "title": "News posts",
+      "addPost": "Add post",
+      "editPost": "Edit post",
+      "slug": "Slug",
+      "slugHint": "URL-safe identifier (e.g. summer-2026-opening).",
+      "slugInvalid": "Use lowercase letters, digits, and hyphens.",
+      "titleMn": "Title (MN)",
+      "titleEn": "Title (EN)",
+      "excerptMn": "Excerpt (MN)",
+      "excerptEn": "Excerpt (EN)",
+      "bodyMn": "Body (MN)",
+      "bodyEn": "Body (EN)",
+      "coverImage": "Cover image URL",
+      "publishedAt": "Published at",
+      "empty": "No news posts yet.",
+      "deleted": "Post removed",
+      "titleRequired": "Title (MN) is required",
+      "slugRequired": "Slug is required"
     }
   }
 }

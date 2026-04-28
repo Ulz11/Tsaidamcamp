@@ -1,49 +1,56 @@
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import {
+  Accommodations,
+  type AccommodationItem,
+} from "@/components/website/accommodations";
+import { BookingBar } from "@/components/website/booking-bar";
+import { Hero } from "@/components/website/hero";
+import { MOCK_ACCOMMODATIONS } from "@/lib/website/design";
+import { createClient } from "@/lib/supabase/server";
 
-export default function HomePage() {
-  const t = useTranslations("website");
+/**
+ * Public landing page.
+ *
+ * Composes the marketing sections. Data fetching is server-side here
+ * (not via /api/public/gers fetch) because we're already in a Next.js
+ * server component and a same-process Supabase query is faster and
+ * doesn't burn an HTTP round-trip. If the front-end ever splits into a
+ * separate origin (e.g. a Claude-Design build), swap this query for
+ * `await fetch(API_BASE + "/api/public/gers")` — the section component
+ * accepts the exact same shape either way.
+ *
+ * If the live query fails or returns nothing, we fall back to the mock
+ * fixture so the page is always reviewable during early development.
+ */
+async function loadAccommodations(): Promise<AccommodationItem[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("gers")
+      .select(
+        "id, name, type, capacity, price_per_night, description_mn, description_en, image_url, area_sqm"
+      )
+      .eq("is_available", true)
+      .order("sort_order", { ascending: true });
+    if (error || !data || data.length === 0) {
+      return [...MOCK_ACCOMMODATIONS];
+    }
+    return data as AccommodationItem[];
+  } catch {
+    return [...MOCK_ACCOMMODATIONS];
+  }
+}
+
+export default async function HomePage() {
+  const items = await loadAccommodations();
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <span className="font-bold text-xl tracking-tight">Tsaidam</span>
-          <div className="flex items-center gap-6 text-sm">
-            <Link href="/" className="font-medium">{t("nav.home")}</Link>
-            <Link href="/gers" className="text-muted-foreground hover:text-foreground">{t("nav.gers")}</Link>
-            <Link href="/programs" className="text-muted-foreground hover:text-foreground">{t("nav.programs")}</Link>
-            <Link href="/gallery" className="text-muted-foreground hover:text-foreground">{t("nav.gallery")}</Link>
-            <Link
-              href="/booking"
-              className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm font-medium hover:bg-primary/90"
-            >
-              {t("nav.booking")}
-            </Link>
-          </div>
-        </nav>
-      </header>
+    <>
+      <section className="relative">
+        <Hero />
+        <BookingBar />
+      </section>
 
-      <main className="flex-1">
-        <section className="flex flex-col items-center justify-center gap-6 px-4 py-24 text-center bg-gradient-to-b from-muted/50 to-background">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            {t("hero.title")}
-          </h1>
-          <p className="max-w-xl text-lg text-muted-foreground">
-            {t("hero.subtitle")}
-          </p>
-          <Link
-            href="/booking"
-            className="rounded-md bg-primary px-8 py-3 text-primary-foreground font-medium hover:bg-primary/90"
-          >
-            {t("nav.booking")}
-          </Link>
-        </section>
-      </main>
-
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        &copy; 2026 Tsaidam Camp
-      </footer>
-    </div>
+      <Accommodations items={items} />
+    </>
   );
 }

@@ -46,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/toast";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -114,6 +115,7 @@ function fmt(amount: number) {
 export default function FinancePage() {
   const t = useTranslations("finance");
   const tc = useTranslations("common");
+  const toast = useToast();
 
   // ── Data state ───────────────────────────────────────────────────────────────
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -131,11 +133,6 @@ export default function FinancePage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  // ── Delete dialog ────────────────────────────────────────────────────────────
-  const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   // ── CSV dialog ───────────────────────────────────────────────────────────────
   const [csvOpen, setCsvOpen] = useState(false);
@@ -290,20 +287,24 @@ export default function FinancePage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/transactions/${deleteTarget.id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error();
-      setTransactions((prev) => prev.filter((tx) => tx.id !== deleteTarget.id));
-      setDeleteOpen(false);
-    } catch {
-    } finally {
-      setDeleting(false);
-    }
+  const handleDelete = (tx: Transaction) => {
+    setTransactions((prev) => prev.filter((x) => x.id !== tx.id));
+    const sign = tx.type === "income" ? "+" : "-";
+    toast.show({
+      message: tc("deleted"),
+      description: `${tx.date} · ${sign}${fmt(tx.amount)} ₮`,
+      undo: {
+        label: tc("undo"),
+        onUndo: () => setTransactions((prev) => [tx, ...prev]),
+        onCommit: async () => {
+          const res = await fetch(`/api/transactions/${tx.id}`, { method: "DELETE" });
+          if (!res.ok) {
+            setTransactions((prev) => [tx, ...prev]);
+            toast.show({ message: tc("actionFailed"), variant: "error" });
+          }
+        },
+      },
+    });
   };
 
   // ── CSV helpers ───────────────────────────────────────────────────────────────
@@ -669,10 +670,7 @@ export default function FinancePage() {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => {
-                            setDeleteTarget(tx);
-                            setDeleteOpen(true);
-                          }}
+                          onClick={() => handleDelete(tx)}
                         >
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
@@ -798,30 +796,6 @@ export default function FinancePage() {
             </DialogClose>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? tc("loading") : tc("save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Delete Dialog ─────────────────────────────────────────────────────── */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t("deleteConfirm")}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("deleteWarning")}</p>
-          <DialogFooter>
-            <DialogClose>
-              <Button variant="outline" disabled={deleting}>
-                {tc("cancel")}
-              </Button>
-            </DialogClose>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? tc("loading") : tc("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

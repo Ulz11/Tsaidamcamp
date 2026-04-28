@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,6 +62,7 @@ const EMPTY_FORM = {
 export default function GuestsPage() {
   const t = useTranslations("guest");
   const tc = useTranslations("common");
+  const toast = useToast();
 
   const [guests, setGuests] = useState<Guest[]>([]);
   const [bookings, setBookings] = useState<BookingSummary[]>([]);
@@ -74,11 +76,6 @@ export default function GuestsPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  // Delete confirm
-  const [deleteTarget, setDeleteTarget] = useState<Guest | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   // Debounce search
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -179,26 +176,25 @@ export default function GuestsPage() {
     }
   };
 
-  // ── Delete helpers ────────────────────────────────────────────────────────
+  // ── Delete (undo-toast) ───────────────────────────────────────────────────
 
-  const openDelete = (g: Guest) => {
-    setDeleteTarget(g);
-    setDeleteOpen(true);
-  };
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/guests/${deleteTarget.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error();
-      setGuests((prev) => prev.filter((g) => g.id !== deleteTarget.id));
-      setDeleteOpen(false);
-    } catch {
-      // keep dialog open, let user retry
-    } finally {
-      setDeleting(false);
-    }
+  const handleDelete = (g: Guest) => {
+    setGuests((prev) => prev.filter((x) => x.id !== g.id));
+    toast.show({
+      message: tc("deleted"),
+      description: g.name,
+      undo: {
+        label: tc("undo"),
+        onUndo: () => setGuests((prev) => [g, ...prev]),
+        onCommit: async () => {
+          const res = await fetch(`/api/guests/${g.id}`, { method: "DELETE" });
+          if (!res.ok) {
+            setGuests((prev) => [g, ...prev]);
+            toast.show({ message: tc("actionFailed"), variant: "error" });
+          }
+        },
+      },
+    });
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -292,7 +288,7 @@ export default function GuestsPage() {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => openDelete(g)}
+                          onClick={() => handleDelete(g)}
                         >
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
@@ -399,27 +395,6 @@ export default function GuestsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirm Dialog */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>
-              {t("deleteConfirm", { name: deleteTarget?.name ?? "" })}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("deleteWarning")}</p>
-          <DialogFooter>
-            <DialogClose>
-              <Button variant="outline" disabled={deleting}>
-                {tc("cancel")}
-              </Button>
-            </DialogClose>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? tc("loading") : tc("delete")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
