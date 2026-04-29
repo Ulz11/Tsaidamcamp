@@ -62,7 +62,7 @@ back-end and the admin CMS live in this repo.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Supabase schema + RLS | ✅ | Migrations 001–005 applied |
+| Supabase schema + RLS | ✅ | Migrations 001–005 applied (005 applied 2026-04-29) |
 | Atomic booking RPC | ✅ | Migration 003 |
 | Beds + area columns | ✅ | Migration 004 |
 | Gallery / promotions / news tables + RLS | ✅ | Migration 005 |
@@ -82,4 +82,4 @@ back-end and the admin CMS live in this repo.
 
 ---
 
-*Last updated: 2026-04-25*
+*Last updated: 2026-04-29*
