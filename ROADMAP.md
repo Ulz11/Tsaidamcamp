@@ -21,11 +21,12 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 | Undo-toast delete (finance/transactions) | ✅ | 6s window, optimistic |
 | Quick-book button per ger row | ✅ | Auto-opens booking dialog |
 | Slim booking dialogs (Essentials + Advanced) | ✅ | Applied to bookings-list + gers page |
+| Guests management page | ✅ | Basic CRUD |
+| Dashboard UI/UX redesign | ✅ | Colored stat cards, progress bar, enriched lists |
+| Calendar view (per-ger Gantt) | ✅ | Month view, one row per ger + Unassigned section |
+| Finance page improvements | ✅ | Accent-badge KPIs + MoM delta, area chart, income pie, monthly breakdown list |
+| Notifications / alerts | ✅ | Header bell: arrivals/departures today + overdue payments, 2-min polling |
 | Website CMS (gallery / promotions / news) | ✅ | Tabs page at /admin/website with full CRUD + undo-toast |
-| Guests management page | ⬜ | Basic CRUD |
-| Finance page improvements | ⬜ | Better charts, monthly breakdown |
-| Calendar view | ⬜ | Month/week view of all bookings across gers |
-| Notifications / alerts | ⬜ | Check-in today, overdue payments |
 | Bulk operations | ⬜ | Multi-select bookings for status updates |
 
 ### Multi-language
@@ -74,11 +75,11 @@ back-end and the admin CMS live in this repo.
 ---
 
 ## Next Up (Priority Order)
-1. ⬜ Calendar view for all ger bookings
-2. ⬜ Guests management page
-3. ⬜ Booking confirmation emails (transactional)
-4. ⬜ Supabase Storage uploads for gallery / cover images (replace URL-paste)
-5. ⬜ Vercel deployment setup with `PUBLIC_WEB_ORIGIN` for Claude-Design front-end
+1. ⬜ Bulk operations (multi-select bookings for status updates)
+2. ⬜ Booking confirmation emails (transactional)
+3. ⬜ Supabase Storage uploads for gallery / cover images (replace URL-paste)
+4. ⬜ Vercel deployment setup with `PUBLIC_WEB_ORIGIN`
+5. ⬜ i18n audit (find missing keys across all admin pages)
 
 ---
 

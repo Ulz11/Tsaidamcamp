@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"C:/Users/Obama/Desktop/Tsaidam camp/Tsaidam camp/tsaidam-camp/.claude/auto-push.sh\"",
+            "timeout": 60,
+            "statusMessage": "Pushing changes to GitHub..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -81,17 +81,30 @@
       "noArrivals": "Өнөөдөр ирэлт байхгүй",
       "noDepartures": "Өнөөдөр гаралт байхгүй"
     },
+    "alerts": {
+      "title": "Сануулга",
+      "loading": "Ачаалж байна…",
+      "empty": "Хүлээгдэж буй сануулга алга",
+      "checkInsToday": "Өнөөдөр ирэх",
+      "checkOutsToday": "Өнөөдөр гарах",
+      "overduePayments": "Хоцорсон төлбөр"
+    },
     "calendar": {
       "title": "Захиалгын хуанли",
-      "subtitle": "Бүх идэвхтэй захиалгын сарын харагдац.",
+      "subtitle": "Гэр бүрийн захиалгыг сараар харуулна.",
       "today": "Өнөөдөр",
       "empty": "Энэ сард захиалга байхгүй",
       "booking": "Захиалга",
+      "gerColumn": "Гэр",
+      "unassigned": "Хуваарилаагүй",
+      "unassignedHint": "Гэрт хуваарилаагүй захиалга",
+      "noGers": "Гэр бүртгэгдээгүй байна",
       "monthBookings": "Сарын захиалга",
       "monthArrivals": "Сарын ирэлт",
       "monthTourists": "Нийт жуулчин",
       "legend": "Эх үүсвэр",
-      "tentativeHint": "түр"
+      "tentativeHint": "түр",
+      "capacity": "багтаамж"
     },
     "inbox": {
       "title": "Шуудан",
@@ -317,8 +330,13 @@
     "deleteFailed": "Гүйлгээ устгах боломжгүй",
     "monthlyTrend": "Сарын динамик",
     "expenseBreakdown": "Зардлын ангилал",
+    "incomeBreakdown": "Орлогын ангилал",
+    "monthlyBreakdown": "Сар тус бүрийн задаргаа",
     "last12Months": "Сүүлийн 12 сар",
     "noChartData": "Харуулах өгөгдөл байхгүй",
+    "vsLastMonth": "өмнөх сартай харьцуулбал",
+    "net": "Цэвэр",
+    "thisMonth": "Энэ сар",
     "csvTitle": "CSV-ээс оруулах",
     "csvDropZone": "CSV файл энд чирч тавих эсвэл дарж сонго",
     "csvPreview": "{count} мөр илэрлээ — баганын тохируулгыг шалгана уу",

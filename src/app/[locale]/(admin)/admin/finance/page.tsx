@@ -3,12 +3,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { format, subMonths, startOfMonth, endOfMonth, parseISO } from "date-fns";
-import { Plus, Upload, Pencil, Trash2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import {
+  Plus,
+  Upload,
+  Pencil,
+  Trash2,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+} from "lucide-react";
 import Papa from "papaparse";
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -18,6 +29,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
+
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -192,13 +205,21 @@ export default function FinancePage() {
     return { income, expense, balance: income - expense };
   }, [transactions]);
 
-  // Monthly trend data (last 12 months)
+  // Monthly trend data (last 12 months) — keyed for breakdown list + chart
   const trendData = useMemo(() => {
-    const months: { month: string; income: number; expense: number }[] = [];
+    const months: {
+      key: string;
+      month: string;
+      fullMonth: string;
+      income: number;
+      expense: number;
+      net: number;
+    }[] = [];
     for (let i = 11; i >= 0; i--) {
       const d = subMonths(new Date(), i);
       const key = format(d, "yyyy-MM");
       const label = format(d, "MMM");
+      const fullMonth = format(d, "MMM yyyy");
       let inc = 0;
       let exp = 0;
       for (const tx of allTx) {
@@ -206,16 +227,66 @@ export default function FinancePage() {
         if (tx.type === "income") inc += Number(tx.amount);
         else exp += Number(tx.amount);
       }
-      months.push({ month: label, income: inc, expense: exp });
+      months.push({
+        key,
+        month: label,
+        fullMonth,
+        income: inc,
+        expense: exp,
+        net: inc - exp,
+      });
     }
     return months;
   }, [allTx]);
 
+  // Month-over-month percent deltas (current month vs prior month)
+  const momDelta = useMemo(() => {
+    const curKey = filterMonth;
+    const prev = subMonths(parseISO(`${filterMonth}-01`), 1);
+    const prevKey = format(prev, "yyyy-MM");
+    let curInc = 0,
+      curExp = 0,
+      prvInc = 0,
+      prvExp = 0;
+    for (const tx of allTx) {
+      const val = Number(tx.amount);
+      if (tx.date.startsWith(curKey)) {
+        if (tx.type === "income") curInc += val;
+        else curExp += val;
+      } else if (tx.date.startsWith(prevKey)) {
+        if (tx.type === "income") prvInc += val;
+        else prvExp += val;
+      }
+    }
+    const pct = (cur: number, prv: number) => {
+      if (prv === 0) return cur === 0 ? 0 : null; // no prior baseline
+      return ((cur - prv) / Math.abs(prv)) * 100;
+    };
+    return {
+      income: pct(curInc, prvInc),
+      expense: pct(curExp, prvExp),
+      balance: pct(curInc - curExp, prvInc - prvExp),
+    };
+  }, [allTx, filterMonth]);
+
   // Expense pie data
-  const pieData = useMemo(() => {
+  const expensePie = useMemo(() => {
     const map = new Map<string, number>();
     for (const tx of allTx) {
       if (tx.type !== "expense") continue;
+      const cat = tx.category ?? "other";
+      map.set(cat, (map.get(cat) ?? 0) + Number(tx.amount));
+    }
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [allTx]);
+
+  // Income pie data
+  const incomePie = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const tx of allTx) {
+      if (tx.type !== "income") continue;
       const cat = tx.category ?? "other";
       map.set(cat, (map.get(cat) ?? 0) + Number(tx.amount));
     }
@@ -287,19 +358,28 @@ export default function FinancePage() {
     }
   };
 
+  // Delete — optimistic + undo toast
   const handleDelete = (tx: Transaction) => {
+    const snapshot = transactions;
     setTransactions((prev) => prev.filter((x) => x.id !== tx.id));
-    const sign = tx.type === "income" ? "+" : "-";
+    const sign = tx.type === "income" ? "+" : "−";
+    const desc = tx.description?.trim() || "";
     toast.show({
       message: tc("deleted"),
-      description: `${tx.date} · ${sign}${fmt(tx.amount)} ₮`,
+      description: `${sign}${fmt(Number(tx.amount))} ${tc("currency")}${desc ? ` · ${desc}` : ""}`,
       undo: {
-        label: tc("undo"),
-        onUndo: () => setTransactions((prev) => [tx, ...prev]),
+        onUndo: () => {
+          setTransactions(snapshot);
+          toast.show({ message: tc("undone"), variant: "info" });
+        },
         onCommit: async () => {
-          const res = await fetch(`/api/transactions/${tx.id}`, { method: "DELETE" });
-          if (!res.ok) {
-            setTransactions((prev) => [tx, ...prev]);
+          try {
+            const res = await fetch(`/api/transactions/${tx.id}`, {
+              method: "DELETE",
+            });
+            if (!res.ok) throw new Error();
+          } catch {
+            setTransactions(snapshot);
             toast.show({ message: tc("actionFailed"), variant: "error" });
           }
         },
@@ -458,54 +538,42 @@ export default function FinancePage() {
 
       {/* KPI cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              {t("income")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600 tabular-nums">
-              {loading ? "—" : `${fmt(income)} ₮`}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <TrendingDown className="h-4 w-4 text-red-500" />
-              {t("expense")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600 tabular-nums">
-              {loading ? "—" : `${fmt(expense)} ₮`}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Wallet className="h-4 w-4 text-blue-500" />
-              {t("balance")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold tabular-nums ${
-                balance >= 0 ? "text-blue-600" : "text-red-600"
-              }`}
-            >
-              {loading ? "—" : `${balance >= 0 ? "" : "-"}${fmt(balance)} ₮`}
-            </div>
-          </CardContent>
-        </Card>
+        <KpiCard
+          icon={<TrendingUp className="h-5 w-5" />}
+          accent="emerald"
+          label={t("income")}
+          value={loading ? "—" : `${fmt(income)} ₮`}
+          deltaPct={loading ? null : momDelta.income}
+          deltaHint={t("vsLastMonth")}
+          higherIsBetter
+        />
+        <KpiCard
+          icon={<TrendingDown className="h-5 w-5" />}
+          accent="rose"
+          label={t("expense")}
+          value={loading ? "—" : `${fmt(expense)} ₮`}
+          deltaPct={loading ? null : momDelta.expense}
+          deltaHint={t("vsLastMonth")}
+          higherIsBetter={false}
+        />
+        <KpiCard
+          icon={<Wallet className="h-5 w-5" />}
+          accent={balance >= 0 ? "sky" : "rose"}
+          label={t("balance")}
+          value={
+            loading
+              ? "—"
+              : `${balance >= 0 ? "" : "-"}${fmt(balance)} ₮`
+          }
+          deltaPct={loading ? null : momDelta.balance}
+          deltaHint={t("vsLastMonth")}
+          higherIsBetter
+        />
       </div>
 
-      {/* Charts */}
+      {/* Charts: area trend + monthly breakdown list */}
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Monthly trend line chart */}
+        {/* Monthly trend area chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-sm font-medium">
@@ -521,37 +589,139 @@ export default function FinancePage() {
                 {t("noChartData")}
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={trendData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart
+                  data={trendData}
+                  margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="gradIncome" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gradExpense" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
+                  />
                   <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                  />
                   <Tooltip
                     formatter={(value) => [`${fmt(Number(value))} ₮`, ""]}
                   />
                   <Legend />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="income"
                     name={t("income")}
-                    stroke="#22c55e"
+                    stroke="#10b981"
                     strokeWidth={2}
-                    dot={false}
+                    fill="url(#gradIncome)"
                   />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="expense"
                     name={t("expense")}
                     stroke="#ef4444"
                     strokeWidth={2}
-                    dot={false}
+                    fill="url(#gradExpense)"
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             )}
           </CardContent>
         </Card>
 
+        {/* Monthly breakdown list */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">
+              {t("monthlyBreakdown")}
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                {t("last12Months")}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {trendData.every((d) => d.income === 0 && d.expense === 0) ? (
+              <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
+                {t("noChartData")}
+              </div>
+            ) : (
+              <div className="max-h-[240px] overflow-auto">
+                <table className="w-full text-xs">
+                  <thead className="sticky top-0 bg-muted/60 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">
+                        {tc("date")}
+                      </th>
+                      <th className="px-2 py-2 text-right font-medium">
+                        {t("income")}
+                      </th>
+                      <th className="px-2 py-2 text-right font-medium">
+                        {t("expense")}
+                      </th>
+                      <th className="px-3 py-2 text-right font-medium">
+                        {t("net")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...trendData].reverse().map((m) => (
+                      <tr
+                        key={m.key}
+                        className={cn(
+                          "border-b border-border/60 last:border-0",
+                          m.key === filterMonth && "bg-primary/5"
+                        )}
+                      >
+                        <td className="px-3 py-1.5 tabular-nums">
+                          {m.fullMonth}
+                          {m.key === filterMonth && (
+                            <span className="ml-1 rounded bg-primary/15 px-1 text-[9px] font-medium text-primary">
+                              {t("thisMonth")}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-2 py-1.5 text-right tabular-nums text-emerald-600 dark:text-emerald-400">
+                          {m.income ? fmt(m.income) : "—"}
+                        </td>
+                        <td className="px-2 py-1.5 text-right tabular-nums text-rose-600 dark:text-rose-400">
+                          {m.expense ? fmt(m.expense) : "—"}
+                        </td>
+                        <td
+                          className={cn(
+                            "px-3 py-1.5 text-right font-medium tabular-nums",
+                            m.net > 0
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : m.net < 0
+                                ? "text-rose-600 dark:text-rose-400"
+                                : "text-muted-foreground"
+                          )}
+                        >
+                          {m.net === 0
+                            ? "—"
+                            : `${m.net > 0 ? "+" : "-"}${fmt(m.net)}`}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Category breakdown pies */}
+      <div className="grid gap-4 lg:grid-cols-2">
         {/* Expense pie chart */}
         <Card>
           <CardHeader>
@@ -560,26 +730,81 @@ export default function FinancePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {pieData.length === 0 ? (
+            {expensePie.length === 0 ? (
               <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
                 {t("noChartData")}
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie
-                    data={pieData}
+                    data={expensePie}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={75}
-                    label={({ name, percent }: { name?: string; percent?: number }) =>
+                    outerRadius={80}
+                    label={({
+                      name,
+                      percent,
+                    }: {
+                      name?: string;
+                      percent?: number;
+                    }) =>
                       `${catLabel(name ?? null)} ${((percent ?? 0) * 100).toFixed(0)}%`
                     }
                     labelLine={false}
                   >
-                    {pieData.map((_, i) => (
+                    {expensePie.map((_, i) => (
+                      <Cell
+                        key={i}
+                        fill={PIE_COLORS[i % PIE_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value) => [`${fmt(Number(value))} ₮`, ""]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Income pie chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">
+              {t("incomeBreakdown")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {incomePie.length === 0 ? (
+              <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
+                {t("noChartData")}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={incomePie}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    label={({
+                      name,
+                      percent,
+                    }: {
+                      name?: string;
+                      percent?: number;
+                    }) =>
+                      `${catLabel(name ?? null)} ${((percent ?? 0) * 100).toFixed(0)}%`
+                    }
+                    labelLine={false}
+                  >
+                    {incomePie.map((_, i) => (
                       <Cell
                         key={i}
                         fill={PIE_COLORS[i % PIE_COLORS.length]}
@@ -671,6 +896,7 @@ export default function FinancePage() {
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleDelete(tx)}
+                          title={tc("delete")}
                         >
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
@@ -921,5 +1147,91 @@ export default function FinancePage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// ── KPI card with colored accent badge + MoM delta ──────────────────────────
+
+type AccentColor = "emerald" | "rose" | "sky";
+
+const ACCENT_BG: Record<AccentColor, string> = {
+  emerald:
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400",
+  rose: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400",
+  sky: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400",
+};
+
+function KpiCard({
+  icon,
+  accent,
+  label,
+  value,
+  deltaPct,
+  deltaHint,
+  higherIsBetter,
+}: {
+  icon: React.ReactNode;
+  accent: AccentColor;
+  label: string;
+  value: string;
+  deltaPct: number | null;
+  deltaHint: string;
+  higherIsBetter: boolean;
+}) {
+  const hasDelta = deltaPct !== null && Number.isFinite(deltaPct);
+  const isUp = hasDelta && (deltaPct as number) > 0;
+  const isDown = hasDelta && (deltaPct as number) < 0;
+  const isFlat = hasDelta && deltaPct === 0;
+  const good = higherIsBetter ? isUp : isDown;
+  const bad = higherIsBetter ? isDown : isUp;
+  const deltaColor = good
+    ? "text-emerald-600 dark:text-emerald-400"
+    : bad
+      ? "text-rose-600 dark:text-rose-400"
+      : "text-muted-foreground";
+
+  return (
+    <Card>
+      <CardContent className="flex items-start justify-between gap-3 pt-5">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-muted-foreground">
+            {label}
+          </div>
+          <div className="mt-1 text-2xl font-bold tabular-nums">{value}</div>
+          {hasDelta ? (
+            <div
+              className={cn(
+                "mt-1 flex items-center gap-1 text-xs",
+                deltaColor
+              )}
+            >
+              {isUp ? (
+                <ArrowUp className="h-3 w-3" />
+              ) : isDown ? (
+                <ArrowDown className="h-3 w-3" />
+              ) : (
+                <Minus className="h-3 w-3" />
+              )}
+              <span className="font-medium tabular-nums">
+                {isFlat ? "0%" : `${Math.abs(deltaPct as number).toFixed(0)}%`}
+              </span>
+              <span className="text-muted-foreground">{deltaHint}</span>
+            </div>
+          ) : (
+            <div className="mt-1 text-xs text-muted-foreground">
+              {deltaHint}
+            </div>
+          )}
+        </div>
+        <div
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+            ACCENT_BG[accent]
+          )}
+        >
+          {icon}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

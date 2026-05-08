@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Languages } from "lucide-react";
+import { NotificationsBell } from "./notifications-bell";
 
 export function AdminHeader() {
   const locale = useLocale();
@@ -20,6 +21,7 @@ export function AdminHeader() {
     <header className="flex h-14 items-center justify-between border-b bg-card px-6">
       <h1 className="text-lg font-semibold">{t("title")}</h1>
       <div className="flex items-center gap-2">
+        <NotificationsBell />
         <Button
           variant="outline"
           size="sm"

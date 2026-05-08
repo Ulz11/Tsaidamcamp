@@ -211,8 +211,9 @@ export default function OperatorsPage() {
     }
   }
 
+  // Delete — optimistic + undo toast
   function handleDelete(op: OperatorRow) {
-    // Optimistic remove; actual DELETE fires on toast expiry unless undone.
+    const snapshot = operators;
     setOperators((prev) => prev.filter((x) => x.id !== op.id));
     const warning =
       op.booking_count > 0
@@ -222,12 +223,18 @@ export default function OperatorsPage() {
       message: tc("deleted"),
       description: warning,
       undo: {
-        label: tc("undo"),
-        onUndo: () => setOperators((prev) => [op, ...prev]),
+        onUndo: () => {
+          setOperators(snapshot);
+          toast.show({ message: tc("undone"), variant: "info" });
+        },
         onCommit: async () => {
-          const res = await fetch(`/api/operators/${op.id}`, { method: "DELETE" });
-          if (!res.ok) {
-            setOperators((prev) => [op, ...prev]);
+          try {
+            const res = await fetch(`/api/operators/${op.id}`, {
+              method: "DELETE",
+            });
+            if (!res.ok) throw new Error();
+          } catch {
+            setOperators(snapshot);
             toast.show({ message: tc("actionFailed"), variant: "error" });
           }
         },
@@ -506,6 +513,8 @@ export default function OperatorsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+
     </div>
   );
 }

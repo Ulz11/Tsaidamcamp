@@ -176,20 +176,26 @@ export default function GuestsPage() {
     }
   };
 
-  // ── Delete (undo-toast) ───────────────────────────────────────────────────
+  // ── Delete (optimistic + undo-toast) ──────────────────────────────────────
 
   const handleDelete = (g: Guest) => {
+    const snapshot = guests;
+    // Optimistic remove
     setGuests((prev) => prev.filter((x) => x.id !== g.id));
     toast.show({
       message: tc("deleted"),
       description: g.name,
       undo: {
-        label: tc("undo"),
-        onUndo: () => setGuests((prev) => [g, ...prev]),
+        onUndo: () => {
+          setGuests(snapshot);
+          toast.show({ message: tc("undone"), variant: "info" });
+        },
         onCommit: async () => {
-          const res = await fetch(`/api/guests/${g.id}`, { method: "DELETE" });
-          if (!res.ok) {
-            setGuests((prev) => [g, ...prev]);
+          try {
+            const res = await fetch(`/api/guests/${g.id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error();
+          } catch {
+            setGuests(snapshot);
             toast.show({ message: tc("actionFailed"), variant: "error" });
           }
         },
@@ -289,6 +295,7 @@ export default function GuestsPage() {
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleDelete(g)}
+                          title={tc("delete")}
                         >
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>

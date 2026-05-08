@@ -9,12 +9,18 @@ export async function GET(request: NextRequest) {
     const source = searchParams.get("source");
     const from = searchParams.get("from");
     const to = searchParams.get("to");
+    const include = searchParams.get("include");
+    const includeGers = include?.split(",").includes("gers") ?? false;
 
     const supabase = await createClient();
 
+    const selectClause = includeGers
+      ? "*, operators(name), booking_gers(ger_id)"
+      : "*, operators(name)";
+
     let query = supabase
       .from("bookings")
-      .select("*, operators(name)")
+      .select(selectClause)
       .order("check_in", { ascending: false });
 
     if (status) {

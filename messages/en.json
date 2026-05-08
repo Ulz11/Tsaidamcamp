@@ -81,17 +81,30 @@
       "noArrivals": "No arrivals today",
       "noDepartures": "No departures today"
     },
+    "alerts": {
+      "title": "Alerts",
+      "loading": "Loading…",
+      "empty": "You're all caught up",
+      "checkInsToday": "Arriving today",
+      "checkOutsToday": "Departing today",
+      "overduePayments": "Overdue payments"
+    },
     "calendar": {
       "title": "Booking Calendar",
-      "subtitle": "Month view of all active bookings.",
+      "subtitle": "Month view of all active bookings across gers.",
       "today": "Today",
       "empty": "No bookings in this month",
       "booking": "Booking",
+      "gerColumn": "Ger",
+      "unassigned": "Unassigned",
+      "unassignedHint": "Not yet placed on a ger",
+      "noGers": "No gers configured yet",
       "monthBookings": "Bookings this month",
       "monthArrivals": "Arrivals this month",
       "monthTourists": "Total tourists",
       "legend": "Source",
-      "tentativeHint": "tentative"
+      "tentativeHint": "tentative",
+      "capacity": "capacity"
     },
     "inbox": {
       "title": "Inbox",
@@ -317,8 +330,13 @@
     "deleteFailed": "Couldn't delete transaction",
     "monthlyTrend": "Monthly Trend",
     "expenseBreakdown": "Expenses by Category",
+    "incomeBreakdown": "Income by Category",
+    "monthlyBreakdown": "Monthly Breakdown",
     "last12Months": "Last 12 months",
     "noChartData": "No data to display",
+    "vsLastMonth": "vs last month",
+    "net": "Net",
+    "thisMonth": "This month",
     "csvTitle": "Import from CSV",
     "csvDropZone": "Drop a CSV file here, or click to browse",
     "csvPreview": "{count} rows detected — verify the column mapping below",
