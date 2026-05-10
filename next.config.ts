@@ -14,6 +14,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  images: {
+    remotePatterns: [
+      // Stock photos used as placeholders on the public landing page.
+      // Replace with Supabase Storage hostname once ger photos are uploaded.
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);

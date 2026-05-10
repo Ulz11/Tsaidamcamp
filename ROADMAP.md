@@ -41,8 +41,8 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 
 | Feature | Status | Notes |
 |---|---|---|
-| Landing page | ⬜ | Camp overview, photos, pricing |
-| Online booking form | ⬜ | Guest self-service |
+| Landing page | ✅ | Hero carousel, bento grid, experience, testimonials, programs, find-us, FAQ, footer — fully bilingual |
+| Online booking form | ⬜ | Guest self-service (next priority) |
 | Availability calendar (public) | ⬜ | Shows available gers by date |
 | Booking confirmation emails | ⬜ | Requires email service integration |
 | Payment integration | ⬜ | QPay or similar Mongolian gateway |
@@ -64,12 +64,14 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 ---
 
 ## Next Up (Priority Order)
-1. ⬜ Bulk operations (multi-select bookings for status updates)
-2. ⬜ Public landing page
-3. ⬜ Vercel deployment setup
-4. ⬜ Supabase Storage for ger photos
-5. ⬜ i18n audit (find missing keys across all admin pages)
+1. ⬜ Online booking form + public availability calendar
+2. ⬜ QPay payment integration
+3. ⬜ Booking confirmation emails (Resend)
+4. ⬜ Supabase Storage for ger photos (replace Unsplash placeholders on landing page)
+5. ⬜ Vercel production deployment + custom domain
+6. ⬜ Bulk operations (multi-select bookings for status updates)
+7. ⬜ i18n audit (find missing keys across all admin pages)
 
 ---
 
-*Last updated: 2026-04-21 (Session 5 — calendar + finance + alerts)*
+*Last updated: 2026-04-24 (Session 6 — public landing page)*
