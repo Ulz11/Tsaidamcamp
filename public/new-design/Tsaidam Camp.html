@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tsaidam — Mongolian Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Structural green — navbar, footer, intro strip only */
+      --forest:    oklch(0.22 0.08 155);
+      --forest-md: oklch(0.30 0.09 152);
+      --forest-lt: oklch(0.44 0.09 150);
+      /* Sky blue — backgrounds, cards, fields */
+      --sand:      oklch(0.93 0.03 222);
+      --sand-dk:   oklch(0.86 0.045 220);
+      --cream:     oklch(0.975 0.018 225);
+      /* Terracotta — accents, CTAs, badges (contrast with blue) */
+      --clay:      oklch(0.52 0.10 48);
+      --clay-lt:   oklch(0.68 0.09 54);
+      /* Neutral ink — body text, no color cast */
+      --ink:       oklch(0.17 0.012 240);
+      --ink-mid:   oklch(0.42 0.015 230);
+      --ink-soft:  oklch(0.62 0.012 225);
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans:  'Outfit', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body  { background: var(--cream); color: var(--ink); font-family: var(--sans); font-weight: 400; line-height: 1.6; overflow-x: hidden; }
+
+    /* ─── SMOOTH REVEAL ─────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.32s; }
+    .reveal-delay-4 { transition-delay: 0.44s; }
+
+    /* ─── NAVBAR ─────────────────────────────────── */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 clamp(1.5rem, 5vw, 4rem);
+      height: 72px; display: flex; align-items: center;
+      justify-content: space-between;
+      transition: background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+    }
+    #navbar.scrolled {
+      background: oklch(0.975 0.018 225 / 0.96);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 1px 0 oklch(0.86 0.03 222 / 0.7);
+    }
+    .nav-logo {
+      font-family: var(--serif); font-size: 1.5rem; font-weight: 600;
+      color: #fff; letter-spacing: 0.03em;
+      transition: color 0.4s;
+      text-decoration: none;
+    }
+    #navbar.scrolled .nav-logo { color: var(--forest); }
+
+    .nav-links { display: flex; align-items: center; gap: clamp(1rem, 2.5vw, 2.5rem); }
+    .nav-links a {
+      font-size: 0.875rem; letter-spacing: 0.04em; text-transform: uppercase;
+      color: rgba(255,255,255,0.85); text-decoration: none;
+      transition: color 0.3s;
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: #fff; }
+    #navbar.scrolled .nav-links a { color: var(--ink-mid); }
+    #navbar.scrolled .nav-links a:hover { color: var(--ink); }
+
+    .nav-cta {
+      font-size: 0.8rem !important; letter-spacing: 0.08em !important;
+      padding: 0.55rem 1.4rem;
+      border: 1.5px solid rgba(255,255,255,0.6);
+      border-radius: 2px;
+      color: #fff !important;
+      transition: background 0.3s, border-color 0.3s, color 0.3s !important;
+    }
+    .nav-cta:hover { background: rgba(255,255,255,0.15) !important; border-color: #fff !important; }
+    #navbar.scrolled .nav-cta {
+      background: var(--forest) !important; border-color: var(--forest) !important;
+      color: #fff !important;
+    }
+    #navbar.scrolled .nav-cta:hover { background: var(--forest-md) !important; }
+
+    /* ─── HERO ───────────────────────────────────── */
+    #hero {
+      position: relative; width: 100%; height: 100vh; min-height: 600px;
+      overflow: hidden; display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+    }
+    .hero-slide {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      opacity: 0; transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity;
+    }
+    .hero-slide.active { opacity: 1; }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        oklch(0.1 0.02 150 / 0.35) 0%,
+        oklch(0.1 0.02 150 / 0.55) 50%,
+        oklch(0.08 0.02 150 / 0.75) 100%
+      );
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      text-align: center; padding: 0 1.5rem;
+      max-width: 820px;
+    }
+    .hero-eyebrow {
+      font-family: var(--sans); font-size: 0.75rem; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--clay-lt);
+      margin-bottom: 1.25rem;
+      opacity: 0; transform: translateY(12px);
+      animation: fadeUp 0.9s 0.2s forwards;
+    }
+    .hero-title {
+      font-family: var(--serif); font-size: clamp(2.6rem, 6vw, 5rem);
+      font-weight: 500; line-height: 1.1;
+      color: #fff; margin-bottom: 1.4rem;
+      text-wrap: balance;
+      opacity: 0; transform: translateY(16px);
+      animation: fadeUp 1s 0.45s forwards;
+    }
+    .hero-title em { font-style: italic; color: var(--clay-lt); }
+    .hero-sub {
+      font-size: clamp(0.95rem, 1.5vw, 1.15rem); font-weight: 300;
+      color: rgba(255,255,255,0.78); line-height: 1.7; max-width: 520px; margin: 0 auto 2.25rem;
+      opacity: 0; transform: translateY(16px);
+      animation: fadeUp 1s 0.7s forwards;
+    }
+    .hero-cta {
+      display: inline-block; padding: 0.9rem 2.5rem;
+      background: var(--clay); color: #fff;
+      font-family: var(--sans); font-size: 0.82rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
+      border: none; cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      opacity: 0; transform: translateY(16px);
+      animation: fadeUp 1s 0.9s forwards;
+    }
+    .hero-cta:hover { background: var(--clay-lt); transform: translateY(-1px); }
+
+    /* Slide indicators */
+    .hero-dots {
+      position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%);
+      z-index: 3; display: flex; gap: 8px;
+    }
+    .hero-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      border: none; cursor: pointer; padding: 0;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .hero-dot.active { background: #fff; transform: scale(1.4); }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── BOOKING BAR ────────────────────────────── */
+    #booking-bar {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+      display: flex; justify-content: center;
+      padding: 0 1.5rem 2.5rem;
+    }
+    .booking-glass {
+      width: 100%; max-width: 860px;
+      background: oklch(0.97 0.01 80 / 0.14);
+      backdrop-filter: blur(24px) saturate(1.4);
+      border: 1px solid oklch(1 0 0 / 0.22);
+      border-radius: 4px;
+      padding: 1.5rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 0;
+    }
+    .booking-field {
+      padding: 0 1.5rem;
+      border-right: 1px solid oklch(1 0 0 / 0.18);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .booking-field:first-child { padding-left: 0; }
+    .booking-field label {
+      font-size: 0.68rem; font-weight: 500; letter-spacing: 0.14em;
+      text-transform: uppercase; color: rgba(255,255,255,0.65);
+    }
+    .booking-field input, .booking-field select {
+      background: transparent; border: none; outline: none;
+      font-family: var(--sans); font-size: 0.95rem; font-weight: 400;
+      color: #fff; cursor: pointer; width: 100%;
+    }
+    .booking-field input::placeholder { color: rgba(255,255,255,0.55); }
+    .booking-field select option { background: var(--forest); color: #fff; }
+    .booking-field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.6); cursor: pointer; }
+    .booking-search {
+      padding-left: 1.5rem;
+      display: flex; align-items: center;
+    }
+    .booking-search button {
+      background: var(--clay); color: #fff;
+      border: none; cursor: pointer;
+      font-family: var(--sans); font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.75rem 1.75rem; border-radius: 2px;
+      white-space: nowrap;
+      transition: background 0.25s, transform 0.2s;
+    }
+    .booking-search button:hover { background: var(--clay-lt); transform: translateY(-1px); }
+
+    /* ─── SECTION SHARED ─────────────────────────── */
+    .section { padding: clamp(5rem, 9vw, 9rem) clamp(1.5rem, 6vw, 5rem); }
+    .section-label {
+      font-size: 0.7rem; font-weight: 500; letter-spacing: 0.26em;
+      text-transform: uppercase; color: var(--ink-soft);
+      margin-bottom: 0.9rem; display: flex; align-items: center; gap: 0.75rem;
+    }
+    .section-label::before {
+      content: ''; display: inline-block; width: 28px; height: 1px;
+      background: var(--ink-soft); flex-shrink: 0;
+    }
+    .section-heading {
+      font-family: var(--serif); font-size: clamp(2rem, 3.8vw, 3.2rem);
+      font-weight: 500; line-height: 1.12; color: var(--ink);
+      margin-bottom: 1.1rem; text-wrap: balance;
+      letter-spacing: -0.01em;
+    }
+    .section-heading em { font-style: italic; color: inherit; }
+    .section-sub {
+      font-size: 1rem; color: var(--ink-mid); line-height: 1.8;
+      max-width: 520px; font-weight: 300;
+    }
+
+    /* ─── INTRO STRIP ────────────────────────────── */
+    #intro {
+      background: var(--forest);
+      display: grid; grid-template-columns: repeat(3, 1fr);
+    }
+    .intro-stat {
+      padding: 3rem 2.5rem; text-align: center;
+      border-right: 1px solid oklch(1 0 0 / 0.1);
+      position: relative;
+    }
+    .intro-stat::after {
+      content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 24px; height: 2px; background: var(--clay);
+    }
+    .intro-stat:last-child { border-right: none; }
+    .intro-stat-num {
+      font-family: var(--serif); font-size: 3rem; font-weight: 400;
+      color: #fff; line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .intro-stat-label {
+      font-size: 0.75rem; font-weight: 400; letter-spacing: 0.14em;
+      text-transform: uppercase; color: rgba(255,255,255,0.5);
+    }
+
+    /* ─── ACCOMMODATIONS ─────────────────────────── */
+    #accommodations { background: var(--cream); }
+    .accomm-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .accomm-header-right { font-size: 0.85rem; color: var(--ink-soft); }
+    .accomm-header-right a { color: var(--clay); text-decoration: none; }
+    .accomm-header-right a:hover { text-decoration: underline; }
+
+    /* Bento grid */
+    .bento {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: 360px 280px;
+      gap: 16px;
+    }
+    .bento-card {
+      position: relative; overflow: hidden;
+      background: var(--sand); border-radius: 3px;
+      cursor: pointer;
+      transition: box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+    .bento-card:hover { box-shadow: 0 16px 48px oklch(0.1 0.04 155 / 0.18); transform: translateY(-3px); }
+    .bento-card:nth-child(1) { grid-column: 1 / 7; grid-row: 1; }
+    .bento-card:nth-child(2) { grid-column: 7 / 10; grid-row: 1; }
+    .bento-card:nth-child(3) { grid-column: 10 / 13; grid-row: 1; }
+    .bento-card:nth-child(4) { grid-column: 1 / 5; grid-row: 2; }
+    .bento-card:nth-child(5) { grid-column: 5 / 9; grid-row: 2; }
+    .bento-card:nth-child(6) { grid-column: 9 / 13; grid-row: 2; }
+
+    .bento-img {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .bento-card:hover .bento-img { transform: scale(1.05); }
+
+    .bento-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to top,
+        oklch(0.12 0.02 60 / 0.88) 0%,
+        oklch(0.12 0.02 60 / 0.2) 55%,
+        transparent 100%
+      );
+    }
+    .bento-badge {
+      position: absolute; top: 16px; left: 16px;
+      font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
+      background: var(--clay); color: #fff;
+      padding: 4px 10px; border-radius: 1px;
+      font-weight: 500;
+    }
+    .bento-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 1.25rem 1.4rem;
+    }
+    .bento-title {
+      font-family: var(--serif); font-size: 1.15rem; font-weight: 500;
+      color: #fff; margin-bottom: 0.3rem; line-height: 1.25;
+    }
+    .bento-card:nth-child(1) .bento-title { font-size: 1.5rem; }
+    .bento-desc {
+      font-size: 0.8rem; color: rgba(255,255,255,0.65);
+      margin-bottom: 0.8rem; line-height: 1.5;
+    }
+    .bento-footer {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .bento-price {
+      font-family: var(--serif); font-size: 1.1rem; color: var(--clay-lt);
+    }
+    .bento-price span {
+      font-family: var(--sans); font-size: 0.72rem;
+      color: rgba(255,255,255,0.5); font-weight: 300;
+    }
+    .bento-link {
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .bento-link:hover { color: #fff; border-color: #fff; }
+
+    /* ─── EXPERIENCE ─────────────────────────────── */
+    #experience {
+      background: var(--sand);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+    }
+    .exp-image {
+      position: relative; aspect-ratio: 4/5; overflow: hidden; border-radius: 3px;
+    }
+    .exp-image img { width: 100%; height: 100%; object-fit: cover; }
+    .exp-image-accent {
+      position: absolute; bottom: -20px; right: -20px;
+      width: 55%; aspect-ratio: 1;
+      background-image: url('https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=500&q=80');
+      background-size: cover; background-position: center;
+      border-radius: 3px; border: 4px solid var(--sand);
+    }
+    .exp-features { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2.5rem; }
+    .exp-feat { display: flex; gap: 1.1rem; align-items: flex-start; }
+    .exp-feat-icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border: 1px solid var(--clay-lt); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--clay); font-size: 0.85rem; margin-top: 2px;
+    }
+    .exp-feat-title { font-family: var(--serif); font-size: 1rem; font-weight: 500; margin-bottom: 0.2rem; }
+    .exp-feat-desc { font-size: 0.85rem; color: var(--ink-mid); line-height: 1.65; }
+
+    /* ─── TESTIMONIALS ───────────────────────────── */
+    #testimonials { background: var(--cream); text-align: center; }
+    .testi-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2rem; margin-top: 3.5rem;
+    }
+    .testi-card {
+      background: var(--sand); border-radius: 3px;
+      padding: 2rem 1.75rem; text-align: left;
+      position: relative;
+      transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
+    }
+    .testi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px oklch(0.1 0.04 155 / 0.10); }
+    .testi-quote {
+      font-family: var(--serif); font-size: 3rem; line-height: 0.8;
+      color: var(--clay-lt); margin-bottom: 1rem;
+    }
+    .testi-text {
+      font-size: 0.92rem; color: var(--ink-mid); line-height: 1.75;
+      font-style: italic; margin-bottom: 1.5rem;
+    }
+    .testi-author { font-weight: 500; font-size: 0.85rem; }
+    .testi-country { font-size: 0.78rem; color: var(--ink-soft); }
+    .testi-stars { color: var(--clay); font-size: 0.75rem; margin-bottom: 0.75rem; letter-spacing: 2px; }
+
+    /* ─── FOOTER ─────────────────────────────────── */
+    footer {
+      background: var(--forest); color: rgba(255,255,255,0.7);
+      padding: 4rem clamp(1.5rem, 6vw, 5rem) 2rem;
+    }
+    .footer-top {
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 3rem; padding-bottom: 3rem;
+      border-bottom: 1px solid oklch(1 0 0 / 0.1);
+      margin-bottom: 2rem;
+    }
+    .footer-logo {
+      font-family: var(--serif); font-size: 1.75rem; font-weight: 600;
+      color: #fff; margin-bottom: 1rem;
+    }
+    .footer-tagline { font-size: 0.88rem; line-height: 1.7; max-width: 220px; }
+    .footer-col-title {
+      font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.45); margin-bottom: 1.1rem; font-weight: 500;
+    }
+    .footer-col a {
+      display: block; font-size: 0.87rem; color: rgba(255,255,255,0.65);
+      text-decoration: none; margin-bottom: 0.6rem;
+      transition: color 0.2s;
+    }
+    .footer-col a:hover { color: #fff; }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.78rem;
+    }
+    .footer-bottom a { color: rgba(255,255,255,0.5); text-decoration: none; }
+
+    /* ─── MODAL ──────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: oklch(0.1 0.02 60 / 0.7);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--cream); border-radius: 4px;
+      max-width: 560px; width: 100%; padding: 2.5rem;
+      transform: translateY(20px); transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-title {
+      font-family: var(--serif); font-size: 1.6rem; font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+    .modal-sub { font-size: 0.88rem; color: var(--ink-mid); margin-bottom: 2rem; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .modal-field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .modal-field.full { grid-column: 1 / -1; }
+    .modal-field label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; color: var(--ink-mid); }
+    .modal-field input, .modal-field select {
+      border: 1px solid var(--sand-dk); border-radius: 2px;
+      padding: 0.65rem 0.9rem; font-family: var(--sans); font-size: 0.9rem;
+      color: var(--ink); background: var(--cream); outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal-field input:focus, .modal-field select:focus { border-color: var(--clay); }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.75rem; }
+    .btn-primary {
+      flex: 1; padding: 0.85rem; background: var(--forest);
+      color: #fff; border: none; border-radius: 2px; cursor: pointer;
+      font-family: var(--sans); font-size: 0.82rem; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      transition: background 0.25s;
+    }
+    .btn-primary:hover { background: var(--forest-md); }
+    .btn-ghost {
+      padding: 0.85rem 1.5rem; background: transparent;
+      color: var(--ink-mid); border: 1px solid var(--sand-dk); border-radius: 2px;
+      cursor: pointer; font-family: var(--sans); font-size: 0.82rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--ink-mid); color: var(--ink); }
+
+    /* ─── RESPONSIVE ─────────────────────────────── */
+    @media (max-width: 900px) {
+      .booking-glass { grid-template-columns: 1fr 1fr; }
+      .booking-field:nth-child(3) { border-right: none; }
+      .booking-search { padding-top: 1rem; grid-column: 1 / -1; justify-content: flex-end; border-top: 1px solid oklch(1 0 0 / 0.15); }
+      .bento { grid-template-rows: auto; }
+      .bento-card:nth-child(1) { grid-column: 1 / -1; grid-row: auto; min-height: 320px; }
+      .bento-card:nth-child(n+2) { grid-column: span 6; grid-row: auto; min-height: 240px; }
+      #experience { grid-template-columns: 1fr; }
+      .exp-image { max-width: 480px; }
+      .testi-grid { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      #intro { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .booking-glass { grid-template-columns: 1fr; gap: 1rem; padding: 1.25rem; }
+      .booking-field { padding: 0; border-right: none; border-bottom: 1px solid oklch(1 0 0 / 0.15); padding-bottom: 0.75rem; }
+      .booking-search { padding: 0; }
+      .nav-links { display: none; }
+      .bento-card:nth-child(n+2) { grid-column: 1 / -1; }
+      .footer-top { grid-template-columns: 1fr; }
+    }
+
+    /* ─── HAMBURGER ───────────────────────────────── */
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px; cursor: pointer;
+      background: none; border: none; padding: 4px; z-index: 110;
+    }
+    .hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: #fff; border-radius: 2px;
+      transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.3s;
+    }
+    #navbar.scrolled .hamburger span { background: var(--forest); }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    @media (max-width: 640px) { .hamburger { display: flex; } }
+
+    /* ─── MOBILE DRAWER ───────────────────────────── */
+    #mobile-drawer {
+      position: fixed; inset: 0; z-index: 105;
+      background: var(--forest);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2rem;
+      transform: translateX(100%);
+      transition: transform 0.45s cubic-bezier(0.22,1,0.36,1);
+    }
+    #mobile-drawer.open { transform: translateX(0); }
+    #mobile-drawer a {
+      font-family: var(--serif); font-size: 2rem; font-weight: 400;
+      color: rgba(255,255,255,0.85); text-decoration: none;
+      transition: color 0.2s;
+    }
+    #mobile-drawer a:hover { color: #fff; }
+    #mobile-drawer .drawer-cta {
+      margin-top: 1rem;
+      font-family: var(--sans); font-size: 0.85rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.9rem 2.5rem;
+      background: var(--clay); color: #fff !important;
+      border-radius: 2px;
+    }
+
+    /* ─── STICKY FLOAT CTA ────────────────────────── */
+    #float-cta {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 90;
+      background: var(--forest); color: #fff;
+      padding: 0.85rem 1.75rem; border-radius: 100px;
+      font-family: var(--sans); font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border: none; cursor: pointer;
+      box-shadow: 0 8px 32px oklch(0.1 0.06 155 / 0.35);
+      transform: translateY(80px); opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.4s, background 0.25s;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    #float-cta.visible { transform: translateY(0); opacity: 1; }
+    #float-cta:hover { background: var(--forest-md); transform: translateY(-2px); }
+    #float-cta .pulse {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--clay-lt);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.6; }
+    }
+
+    /* ─── LIGHTBOX ────────────────────────────────── */
+    #lightbox {
+      position: fixed; inset: 0; z-index: 300;
+      background: oklch(0.08 0.03 155 / 0.95);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s;
+    }
+    #lightbox.open { opacity: 1; pointer-events: all; }
+    .lb-inner {
+      display: grid; grid-template-columns: 1fr 380px;
+      max-width: 1000px; width: 95%; max-height: 90vh;
+      background: var(--cream); border-radius: 4px; overflow: hidden;
+      transform: scale(0.93) translateY(20px);
+      transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+    #lightbox.open .lb-inner { transform: scale(1) translateY(0); }
+    .lb-image {
+      position: relative; overflow: hidden; min-height: 420px;
+      background: var(--sand-dk);
+    }
+    .lb-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .lb-close {
+      position: absolute; top: 1rem; right: 1rem;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: oklch(0 0 0 / 0.4); color: #fff; border: none;
+      cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; z-index: 2;
+    }
+    .lb-close:hover { background: oklch(0 0 0 / 0.65); }
+    .lb-details {
+      padding: 2.5rem 2rem; display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+    .lb-badge {
+      font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
+      background: var(--clay); color: #fff;
+      padding: 4px 10px; border-radius: 1px; width: fit-content;
+      margin-bottom: 1rem;
+    }
+    .lb-title {
+      font-family: var(--serif); font-size: 1.6rem; font-weight: 500;
+      color: var(--ink); margin-bottom: 0.5rem; line-height: 1.2;
+    }
+    .lb-desc { font-size: 0.9rem; color: var(--ink-mid); line-height: 1.75; margin-bottom: 1.75rem; }
+    .lb-features { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 2rem; }
+    .lb-feature {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.84rem; color: var(--ink-mid);
+    }
+    .lb-feature::before {
+      content: '✓'; color: var(--forest); font-size: 0.75rem;
+      width: 18px; height: 18px; border: 1px solid var(--forest-lt);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .lb-price-row {
+      display: flex; align-items: baseline; gap: 0.4rem;
+      margin-bottom: 1.5rem; padding-top: 1.5rem;
+      border-top: 1px solid var(--sand-dk);
+    }
+    .lb-price { font-family: var(--serif); font-size: 1.8rem; color: var(--ink); }
+    .lb-per { font-size: 0.8rem; color: var(--ink-soft); }
+    .lb-book-btn {
+      width: 100%; padding: 0.95rem; background: var(--forest);
+      color: #fff; border: none; border-radius: 2px; cursor: pointer;
+      font-family: var(--sans); font-size: 0.82rem; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      transition: background 0.25s;
+    }
+    .lb-book-btn:hover { background: var(--forest-md); }
+
+    /* ─── FAQ ─────────────────────────────────────── */
+    #faq { background: var(--sand); }
+    .faq-list { margin-top: 3rem; display: flex; flex-direction: column; gap: 0; }
+    .faq-item {
+      border-top: 1px solid var(--sand-dk);
+      overflow: hidden;
+    }
+    .faq-item:last-child { border-bottom: 1px solid var(--sand-dk); }
+    .faq-q {
+      width: 100%; text-align: left; background: none; border: none;
+      padding: 1.4rem 0; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--serif); font-size: 1.05rem; font-weight: 500;
+      color: var(--ink); gap: 1rem;
+      transition: color 0.2s;
+    }
+    .faq-q:hover { color: var(--forest); }
+    .faq-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid var(--sand-dk); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; font-size: 1rem;
+      color: var(--clay); transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), border-color 0.2s;
+    }
+    .faq-item.open .faq-icon { transform: rotate(45deg); border-color: var(--clay); }
+    .faq-a {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.45s cubic-bezier(0.22,1,0.36,1), padding 0.3s;
+    }
+    .faq-a-inner {
+      padding-bottom: 1.4rem;
+      font-size: 0.92rem; color: var(--ink-mid); line-height: 1.85; max-width: 680px;
+    }
+    .faq-item.open .faq-a { max-height: 300px; }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ─────────────────────────────── -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">Tsaidam</a>
+  <div class="nav-links">
+    <a href="#accommodations">Accommodations</a>
+    <a href="#experience">Experience</a>
+    <a href="#">Programs</a>
+    <a href="#">Gallery</a>
+    <a href="#" class="nav-cta" id="nav-book-btn">Book Now</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ─── MOBILE DRAWER ─────────────────────── -->
+<div id="mobile-drawer">
+  <a href="#accommodations" class="drawer-link">Accommodations</a>
+  <a href="#experience" class="drawer-link">Experience</a>
+  <a href="#" class="drawer-link">Programs</a>
+  <a href="#" class="drawer-link">Gallery</a>
+  <a href="#" class="drawer-cta drawer-link">Book Now</a>
+</div>
+
+<!-- ─── FLOAT CTA ─────────────────────────── -->
+<button id="float-cta">
+  <span class="pulse"></span>
+  Book Now
+</button>
+
+<!-- ─── LIGHTBOX ──────────────────────────── -->
+<div id="lightbox">
+  <div class="lb-inner">
+    <div class="lb-image">
+      <img id="lb-img" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="" />
+      <button class="lb-close" id="lb-close">✕</button>
+    </div>
+    <div class="lb-details">
+      <div class="lb-badge" id="lb-badge"></div>
+      <h3 class="lb-title" id="lb-title"></h3>
+      <p class="lb-desc" id="lb-desc"></p>
+      <div class="lb-features" id="lb-features"></div>
+      <div class="lb-price-row">
+        <span class="lb-price" id="lb-price"></span>
+        <span class="lb-per">/ night</span>
+      </div>
+      <button class="lb-book-btn" id="lb-book-btn">Request This Stay</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── HERO ───────────────────────────────── -->
+<section id="hero">
+  <!-- Slides injected by JS -->
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <p class="hero-eyebrow" style="font-family: sans-serif; opacity: 1; color: rgb(10, 64, 15)">Mongolia · Khövsgöl · Since 2012</p>
+    <h1 class="hero-title">Experience <em>Serenity</em><br>at Tsaidam</h1>
+    <p class="hero-sub">Nestled between ancient steppes and crystal lakes a luxury glamping escape where Mongolian tradition meets refined comfort.</p>
+    <a href="#accommodations" class="hero-cta">Explore Stays</a>
+  </div>
+
+  <div class="hero-dots" id="hero-dots"></div>
+
+  <div id="booking-bar">
+    <div class="booking-glass">
+      <div class="booking-field">
+        <label>Check-in</label>
+        <input type="date" id="checkin" />
+      </div>
+      <div class="booking-field">
+        <label>Check-out</label>
+        <input type="date" id="checkout" />
+      </div>
+      <div class="booking-field" style="border-right:none">
+        <label>Guests</label>
+        <select id="guests">
+          <option>1 guest</option>
+          <option selected>2 guests</option>
+          <option>3 guests</option>
+          <option>4 guests</option>
+          <option>5+ guests</option>
+        </select>
+      </div>
+      <div class="booking-search">
+        <button id="search-btn">Search</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INTRO STRIP ──────────────────────── -->
+<div id="intro">
+  <div class="intro-stat reveal">
+    <div class="intro-stat-num" style="font-family: Arvo">40+</div>
+    <div class="intro-stat-label">Luxury Gers & Cabins</div>
+  </div>
+  <div class="intro-stat reveal reveal-delay-1">
+    <div class="intro-stat-num" style="font-family: Arvo">2,600m</div>
+    <div class="intro-stat-label">Above Sea Level</div>
+  </div>
+  <div class="intro-stat reveal reveal-delay-2">
+    <div class="intro-stat-num" style="font-family: Arvo">98%</div>
+    <div class="intro-stat-label">Guest Satisfaction</div>
+  </div>
+</div>
+
+<!-- ─── ACCOMMODATIONS ────────────────────── -->
+<section id="accommodations" class="section">
+  <div class="accomm-header reveal">
+    <div>
+      <p class="section-label">Where You'll Stay</p>
+      <h2 class="section-heading">Our <em>Accommodations</em></h2>
+      <p class="section-sub" style="font-size: 1px">Each ger and cabin is thoughtfully appointed — hand-stitched textiles, wood-burning stoves, and panoramic nature views.</p>
+    </div>
+    <div class="accomm-header-right">
+      Showing 6 of 14 &nbsp;<a href="#">View all →</a>
+    </div>
+  </div>
+
+  <div class="bento reveal reveal-delay-2" id="bento-grid">
+    <!-- cards injected by JS -->
+  </div>
+</section>
+
+<!-- ─── EXPERIENCE ────────────────────────── -->
+<section id="experience" class="section">
+  <div class="exp-image reveal">
+    <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=900&q=80" alt="Mongolian landscape" />
+    <div class="exp-image-accent"></div>
+  </div>
+  <div class="reveal reveal-delay-2">
+    <p class="section-label">The Tsaidam Way</p>
+    <h2 class="section-heading">A Stay Beyond<br><em>the Ordinary</em></h2>
+    <p class="section-sub">Every detail of your stay is curated — from sunrise horseback rides across the steppe to candlelit traditional banquets under the stars.</p>
+    <div class="exp-features">
+      <div class="exp-feat reveal reveal-delay-1">
+        <div class="exp-feat-icon">✦</div>
+        <div>
+          <div class="exp-feat-title">Immersive Nomadic Culture</div>
+          <div class="exp-feat-desc">Learn to brew airag, build a ger, and navigate by the stars with our local guides.</div>
+        </div>
+      </div>
+      <div class="exp-feat reveal reveal-delay-2">
+        <div class="exp-feat-icon">◎</div>
+        <div>
+          <div class="exp-feat-title">Farm-to-Table Cuisine</div>
+          <div class="exp-feat-desc">Chef-prepared meals using ingredients sourced from surrounding herder communities.</div>
+        </div>
+      </div>
+      <div class="exp-feat reveal reveal-delay-3">
+        <div class="exp-feat-icon">⟡</div>
+        <div>
+          <div class="exp-feat-title">Tailored Expeditions</div>
+          <div class="exp-feat-desc">Eagle hunting, glacier trekking, and desert camel safaris — all arranged for you.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TESTIMONIALS ──────────────────────── -->
+<section id="testimonials" class="section">
+  <p class="section-label" style="text-align:center;justify-content:center">Guest Stories</p>
+  <h2 class="section-heading reveal reveal-delay-1" style="text-align:center;max-width:500px;margin:0 auto 0.5rem">Words from <em>Our Guests</em></h2>
+  <div class="testi-grid">
+    <div class="testi-card reveal reveal-delay-1">
+      <div class="testi-quote">"</div>
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">Waking up to the sound of wind on the steppe, opening the ger door to a sea of wildflowers — nothing in a luxury hotel has ever come close to this.</p>
+      <div class="testi-author">Élise Moreau</div>
+      <div class="testi-country">Paris, France</div>
+    </div>
+    <div class="testi-card reveal reveal-delay-2">
+      <div class="testi-quote">"</div>
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">The staff remembered our names, our dietary preferences, our anniversary. The thoughtfulness was extraordinary. We'll return every year.</p>
+      <div class="testi-author">James & Sarah T.</div>
+      <div class="testi-country">Toronto, Canada</div>
+    </div>
+    <div class="testi-card reveal reveal-delay-3">
+      <div class="testi-quote">"</div>
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">A genuinely transformative experience. The Deluxe Ger was warmer than any hotel room, and the bonfire banquets under the Milky Way — unforgettable.</p>
+      <div class="testi-author">Kenji Watanabe</div>
+      <div class="testi-country">Tokyo, Japan</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PROGRAMS STRIP ─────────────────────── -->
+<div style="background:var(--sand);padding:5rem clamp(1.5rem,6vw,5rem);">
+  <div class="reveal" style="text-align:center;margin-bottom:3rem;">
+    <p class="section-label" style="justify-content:center;">What To Do</p>
+    <h2 class="section-heading" style="margin:0 auto;text-align:center;max-width:480px;">Curated <em>Experiences</em></h2>
+  </div>
+  <div class="reveal reveal-delay-1" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;">
+    <div style="background:var(--cream);border-radius:3px;overflow:hidden;transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),box-shadow 0.35s ease;" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 16px 40px oklch(0.1 0.02 65 / 0.10)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="height:180px;background:url('https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=500&q=80') center/cover;"></div>
+      <div style="padding:1.4rem;">
+        <div style="font-family:var(--serif);font-size:1.05rem;font-weight:500;color:var(--ink);margin-bottom:0.35rem;">Horse Riding</div>
+        <div style="font-size:0.82rem;color:var(--ink-soft);line-height:1.6;">Guided rides across open steppe at dawn or dusk.</div>
+      </div>
+    </div>
+    <div style="background:var(--cream);border-radius:3px;overflow:hidden;transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),box-shadow 0.35s ease;" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 16px 40px oklch(0.1 0.02 65 / 0.10)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="height:180px;background:url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=500&q=80') center/cover;"></div>
+      <div style="padding:1.4rem;">
+        <div style="font-family:var(--serif);font-size:1.05rem;font-weight:500;color:var(--ink);margin-bottom:0.35rem;">Stargazing</div>
+        <div style="font-size:0.82rem;color:var(--ink-soft);line-height:1.6;">Zero light pollution — the Milky Way fills the sky.</div>
+      </div>
+    </div>
+    <div style="background:var(--cream);border-radius:3px;overflow:hidden;transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),box-shadow 0.35s ease;" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 16px 40px oklch(0.1 0.02 65 / 0.10)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="height:180px;background:url('https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=500&q=80') center/cover;"></div>
+      <div style="padding:1.4rem;">
+        <div style="font-family:var(--serif);font-size:1.05rem;font-weight:500;color:var(--ink);margin-bottom:0.35rem;">Bonfire Banquet</div>
+        <div style="font-size:0.82rem;color:var(--ink-soft);line-height:1.6;">Traditional Mongolian feast under an open sky.</div>
+      </div>
+    </div>
+    <div style="background:var(--cream);border-radius:3px;overflow:hidden;transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),box-shadow 0.35s ease;" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 16px 40px oklch(0.1 0.02 65 / 0.10)'" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="height:180px;background:url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=500&q=80') center/cover;"></div>
+      <div style="padding:1.4rem;">
+        <div style="font-family:var(--serif);font-size:1.05rem;font-weight:500;color:var(--ink);margin-bottom:0.35rem;">Lake Trekking</div>
+        <div style="font-size:0.82rem;color:var(--ink-soft);line-height:1.6;">Crystal alpine lakes hidden in the Khangai mountains.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FIND US ───────────────────────────── -->
+<section id="findus" class="section" style="background:var(--forest);padding-top:5rem;padding-bottom:0;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;padding-bottom:4rem;">
+    <div>
+      <p class="section-label" style="color:rgba(255,255,255,0.5)">How to Reach Us</p>
+      <h2 class="section-heading" style="color:#fff">Find Us in the<br><em style="color:rgba(255,255,255,0.75)">Heart of Arkhangai</em></h2>
+      <p class="section-sub" style="color:rgba(255,255,255,0.65);margin-bottom:2.5rem;">Tsaidam Tourist Camp is nestled in the Bayan soum of Arkhangai Province — roughly a 6-hour scenic drive from Ulaanbaatar.</p>
+      <div style="display:flex;flex-direction:column;gap:1.25rem;margin-bottom:2.5rem;">
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:32px;height:32px;border:1px solid var(--clay-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--clay-lt);font-size:0.9rem;flex-shrink:0;margin-top:2px;">⌖</div>
+          <div>
+            <div style="font-family:var(--serif);font-size:0.95rem;color:#fff;margin-bottom:0.15rem;">Address</div>
+            <div style="font-size:0.85rem;color:rgba(255,255,255,0.6);line-height:1.6;">GRQR+3JF, Баян, Архангай, 65019<br>Arkhangai Province, Mongolia</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:32px;height:32px;border:1px solid var(--clay-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--clay-lt);font-size:0.9rem;flex-shrink:0;margin-top:2px;">◷</div>
+          <div>
+            <div style="font-family:var(--serif);font-size:0.95rem;color:#fff;margin-bottom:0.15rem;">Getting Here</div>
+            <div style="font-size:0.85rem;color:rgba(255,255,255,0.6);line-height:1.6;">~6 hrs by car from Ulaanbaatar via A0401<br>Airport transfers available on request</div>
+          </div>
+        </div>
+      </div>
+      <a href="https://maps.google.com/?q=GRQR%2B3JF,+Баян,+Архангай,+65019" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:0.6rem;padding:0.8rem 1.75rem;background:var(--clay);color:#fff;text-decoration:none;font-family:var(--sans);font-size:0.8rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border-radius:2px;transition:background 0.25s;">
+        Open in Google Maps ↗
+      </a>
+    </div>
+    <div style="border-radius:4px;overflow:hidden;height:400px;position:relative;">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d170000!2d101.2!3d47.6!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zR1JRUiszSkY!5e1!3m2!1sen!2smn!4v1714000000000!5m2!1sen!2smn"
+        width="100%" height="100%" style="border:0;filter:grayscale(0.3) contrast(1.05);" allowfullscreen loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <a href="https://maps.google.com/?q=GRQR%2B3JF,+Баян,+Архангай,+65019" target="_blank" rel="noopener"
+        style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:transparent;"></a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FAQ ───────────────────────────────── -->
+<section id="faq" class="section">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:start;">
+    <div class="reveal">
+      <p class="section-label">Questions</p>
+      <h2 class="section-heading">Frequently<br><em>Asked</em></h2>
+      <p class="section-sub" style="margin-top:1rem;">Everything you need to know before your stay. Can't find an answer? Write to us directly.</p>
+      <a href="#" style="display:inline-block;margin-top:1.75rem;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--clay);text-decoration:none;border-bottom:1px solid var(--clay);padding-bottom:2px;">Contact Us →</a>
+    </div>
+    <div class="faq-list reveal reveal-delay-1">
+      <div class="faq-item">
+        <button class="faq-q">What is the best time to visit?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">The camp is open from June through September. July and August offer the warmest weather and the most vibrant steppe landscape, while June and September bring cooler temperatures and fewer visitors — ideal for a more private retreat.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How do I get to Tsaidam?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">The camp is located in Bayan soum, Arkhangai Province — approximately 6 hours by vehicle from Ulaanbaatar. We offer airport transfer services upon request. The nearest town is Tsetserleg, about 90 km away.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Is there Wi-Fi or phone signal?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Tsaidam is intentionally off the grid — part of the experience. There is no Wi-Fi, and mobile signal is minimal. Emergency satellite communication is available at the camp office. We encourage guests to fully disconnect.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What is included in the stay?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">All stays include three daily meals (breakfast, lunch, dinner) prepared by our on-site chef, one guided activity of your choice, and access to all shared camp facilities. Premium activities such as eagle hunting or multi-day treks are priced separately.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What should I pack?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Layers are key — mornings and evenings can be cold even in summer. We recommend sturdy walking shoes, sunscreen, a warm jacket, and a camera. Bedding, towels, and basic toiletries are all provided in your ger or cabin.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ────────────────────────────── -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">Tsaidam</div>
+      <p class="footer-tagline">Luxury glamping in the heart of Mongolia's pristine wilderness.</p>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Stay</div>
+      <a href="#">Luxury Ger</a>
+      <a href="#">Deluxe Ger</a>
+      <a href="#">Standard Cabin</a>
+      <a href="#">Family Ger</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Explore</div>
+      <a href="#">Horse Riding</a>
+      <a href="#">Eagle Hunting</a>
+      <a href="#">Stargazing</a>
+      <a href="#">Cultural Programs</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Camp</div>
+      <a href="#">About Us</a>
+      <a href="#">Gallery</a>
+      <a href="#">Contact</a>
+      <a href="#">Book Now</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Tsaidam Tourist Camp, Mongolia</span>
+    <div style="display:flex;gap:1.5rem">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ─── BOOKING MODAL ──────────────────────── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 class="modal-title" id="modal-title">Luxury Ger</h2>
+    <p class="modal-sub">Complete your reservation — we'll confirm within 24 hours.</p>
+    <div class="modal-grid">
+      <div class="modal-field">
+        <label>Check-in</label>
+        <input type="date" id="modal-checkin" />
+      </div>
+      <div class="modal-field">
+        <label>Check-out</label>
+        <input type="date" id="modal-checkout" />
+      </div>
+      <div class="modal-field">
+        <label>Guests</label>
+        <select>
+          <option>1 guest</option>
+          <option selected>2 guests</option>
+          <option>3 guests</option>
+          <option>4+ guests</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Your Name</label>
+        <input type="text" placeholder="Full name" />
+      </div>
+      <div class="modal-field full">
+        <label>Email</label>
+        <input type="email" placeholder="you@example.com" />
+      </div>
+      <div class="modal-field full">
+        <label>Phone</label>
+        <input type="tel" placeholder="+1 (000) 000-0000" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modal-close">Cancel</button>
+      <button class="btn-primary">Request Booking</button>
+    </div>
+  </div>
+</div>
+
+<script type="text/babel">
+  const { useState, useEffect } = React;
+
+  // ─── HERO SLIDES ──────────────────────────────────────────────────────────
+  const SLIDES = [
+    {
+      url: 'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=1800&q=85',
+      label: 'Mongolian Steppe'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1531761535209-180857e963b9?w=1800&q=85',
+      label: 'Cozy Ger Interior'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1542401886-65d6c61db217?w=1800&q=85',
+      label: 'Bonfire Night'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1800&q=85',
+      label: 'Mountain Lake'
+    },
+  ];
+
+  // Inject slides
+  const hero = document.getElementById('hero');
+  const dotsContainer = document.getElementById('hero-dots');
+  let currentSlide = 0;
+
+  SLIDES.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'hero-slide' + (i === 0 ? ' active' : '');
+    div.style.backgroundImage = `url('${s.url}')`;
+    // Insert before overlay
+    hero.insertBefore(div, hero.querySelector('.hero-overlay'));
+
+    const dot = document.createElement('button');
+    dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goToSlide(i);
+    dotsContainer.appendChild(dot);
+  });
+
+  function goToSlide(idx) {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots   = document.querySelectorAll('.hero-dot');
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    currentSlide = idx;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+  }
+
+  setInterval(() => goToSlide((currentSlide + 1) % SLIDES.length), 5000);
+
+  // ─── NAVBAR SCROLL ────────────────────────────────────────────────────────
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // ─── BENTO GRID ───────────────────────────────────────────────────────────
+  const GERS = [
+    {
+      title: 'Deluxe Ger Suite',
+      desc: 'Hand-loomed textiles, king bed, private deck',
+      badge: 'Signature',
+      price: '₮385,000',
+      image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=900&q=80',
+    },
+    {
+      title: 'Standard Ger',
+      desc: 'Cozy & authentic',
+      badge: 'Classic',
+      price: '₮195,000',
+      image: 'https://images.unsplash.com/photo-1478827536114-da961b7f86d2?w=600&q=80',
+    },
+    {
+      title: 'Lakeview Cabin',
+      desc: 'Panoramic water views',
+      badge: 'New',
+      price: '₮290,000',
+      image: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&q=80',
+    },
+    {
+      title: 'Family Ger',
+      desc: 'Two rooms, up to 6 guests',
+      badge: 'Family',
+      price: '₮320,000',
+      image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=700&q=80',
+    },
+    {
+      title: 'Glamping Tent',
+      desc: 'Canvas & wood, stargazing skylight',
+      badge: 'Popular',
+      price: '₮240,000',
+      image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=700&q=80',
+    },
+    {
+      title: 'Staff Cabin',
+      desc: 'Minimalist, private retreat',
+      badge: 'Cozy',
+      price: '₮155,000',
+      image: 'https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=700&q=80',
+    },
+  ];
+
+  const bentoGrid = document.getElementById('bento-grid');
+  GERS.forEach((g) => {
+    const card = document.createElement('div');
+    card.className = 'bento-card';
+    card.innerHTML = `
+      <div class="bento-img" style="background-image:url('${g.image}')"></div>
+      <div class="bento-overlay"></div>
+      <div class="bento-badge">${g.badge}</div>
+      <div class="bento-info">
+        <div class="bento-title">${g.title}</div>
+        <div class="bento-desc">${g.desc}</div>
+        <div class="bento-footer">
+          <div class="bento-price">${g.price} <span>/ night</span></div>
+          <a href="#" class="bento-link" data-title="${g.title}">View details →</a>
+        </div>
+      </div>
+    `;
+    card.addEventListener('click', () => openLightbox(g));
+    bentoGrid.appendChild(card);
+  });
+
+  // ─── MODAL ────────────────────────────────────────────────────────────────
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalClose = document.getElementById('modal-close');
+
+  function openModal(title) {
+    const ci = document.getElementById('checkin').value;
+    const co = document.getElementById('checkout').value;
+    if (ci) document.getElementById('modal-checkin').value = ci;
+    if (co) document.getElementById('modal-checkout').value = co;
+    modalTitle.textContent = title || 'Book Your Stay';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  modalClose.onclick = closeModal;
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.getElementById('nav-book-btn').onclick = e => { e.preventDefault(); openModal('Book Your Stay'); };
+  document.getElementById('search-btn').onclick = () => openModal('Book Your Stay');
+  document.querySelectorAll('.hero-cta').forEach(b => b.addEventListener('click', e => { if (!b.getAttribute('href').startsWith('#accomm')) return; }));
+
+  document.addEventListener('click', e => {
+    const link = e.target.closest('.bento-link');
+    if (link) { e.preventDefault(); }
+  });
+
+  // Set default dates
+  const today = new Date();
+  const tom   = new Date(today); tom.setDate(today.getDate() + 1);
+  const week  = new Date(today); week.setDate(today.getDate() + 7);
+  const fmt = d => d.toISOString().slice(0,10);
+  document.getElementById('checkin').value  = fmt(tom);
+  document.getElementById('checkout').value = fmt(week);
+
+  // ─── SCROLL REVEAL ───────────────────────────────────────────────────────
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ─── ANIMATED COUNTERS ───────────────────────────────────────────────────
+  const counters = document.querySelectorAll('.intro-stat-num');
+  const targets  = ['14', '2200', '98'];
+  const suffixes = ['+', 'm', '%'];
+  let counted = false;
+  const countObs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !counted) {
+      counted = true;
+      counters.forEach((el, i) => {
+        const end = parseInt(targets[i]);
+        const dur = 1400;
+        const step = Math.ceil(end / (dur / 16));
+        let cur = 0;
+        const tick = () => {
+          cur = Math.min(cur + step, end);
+          el.textContent = (i === 1 ? cur.toLocaleString() : cur) + suffixes[i];
+          if (cur < end) requestAnimationFrame(tick);
+        };
+        tick();
+      });
+    }
+  }, { threshold: 0.5 });
+  countObs.observe(document.getElementById('intro'));
+
+  // ─── HAMBURGER + DRAWER ───────────────────────────────────────────────────
+  const hamburger   = document.getElementById('hamburger');
+  const drawer      = document.getElementById('mobile-drawer');
+  hamburger.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    hamburger.classList.toggle('open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  document.querySelectorAll('.drawer-link').forEach(a => {
+    a.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      hamburger.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+
+  // ─── FLOAT CTA ────────────────────────────────────────────────────────────
+  const floatCta = document.getElementById('float-cta');
+  floatCta.addEventListener('click', () => openModal('Book Your Stay'));
+  const heroEl = document.getElementById('hero');
+  const floatObs = new IntersectionObserver(entries => {
+    floatCta.classList.toggle('visible', !entries[0].isIntersecting);
+  }, { threshold: 0.1 });
+  floatObs.observe(heroEl);
+
+  // ─── LIGHTBOX ─────────────────────────────────────────────────────────────
+  const GER_DETAILS = {
+    'Deluxe Ger Suite': {
+      features: ['King-size bed with linen bedding','Private wooden deck','Wood-burning cast iron stove','En-suite wet room','Curated minibar & tea tray'],
+      longDesc: 'The signature experience at Tsaidam — a spacious 45 m² ger suite dressed in hand-loomed textiles, carved furniture, and antique Mongolian décor. Wake to panoramic steppe views from your private deck.',
+    },
+    'Standard Ger': {
+      features: ['Two single or one double bed','Shared bathroom facilities','Traditional wool furnishings','Morning tea service'],
+      longDesc: 'An authentic stay rooted in nomadic tradition. Compact and cosy, the Standard Ger is thoughtfully appointed with hand-crafted Mongolian textiles and warmed by a central stove.',
+    },
+    'Lakeview Cabin': {
+      features: ['Floor-to-ceiling lake view windows','Queen bed with down duvet','Private bathroom with hot shower','Wrap-around terrace'],
+      longDesc: 'Perched on a gentle rise with uninterrupted views of the alpine lake, this timber cabin blends Scandinavian minimalism with Mongolian warmth.',
+    },
+    'Family Ger': {
+      features: ['Two connected rooms, up to 6 guests','Bunk options for children','Shared living area with seating','Private outdoor firepit'],
+      longDesc: 'Two adjoining gers linked by a sheltered walkway, perfect for families or small groups. Spacious, warm, and full of character.',
+    },
+    'Glamping Tent': {
+      features: ['Canvas & reclaimed wood frame','Skylight panel for stargazing','Queen bed with heated pad','Shared eco-bathroom nearby'],
+      longDesc: 'Fall asleep under a canvas of stars. The Glamping Tent combines the romance of the outdoors with a proper bed, warm lighting, and a skylight positioned perfectly for stargazing.',
+    },
+    'Staff Cabin': {
+      features: ['Single occupancy','Simple wooden interior','Shared camp facilities','Quiet, private location'],
+      longDesc: 'A minimalist retreat for the solo traveller or budget-conscious guest. Clean, quiet, and charming — everything you need and nothing you don\'t.',
+    },
+  };
+
+  const lightbox = document.getElementById('lightbox');
+  function openLightbox(ger) {
+    document.getElementById('lb-img').src   = ger.image;
+    document.getElementById('lb-img').alt   = ger.title;
+    document.getElementById('lb-badge').textContent  = ger.badge;
+    document.getElementById('lb-title').textContent  = ger.title;
+    document.getElementById('lb-price').textContent  = ger.price;
+    const details = GER_DETAILS[ger.title] || {};
+    document.getElementById('lb-desc').textContent = details.longDesc || ger.desc;
+    const featEl = document.getElementById('lb-features');
+    featEl.innerHTML = (details.features || []).map(f => `<div class="lb-feature">${f}</div>`).join('');
+    document.getElementById('lb-book-btn').onclick = () => { closeLightbox(); openModal(ger.title); };
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('lb-close').onclick = closeLightbox;
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+
+  // Attach lightbox to bento cards
+  window.__gerData = [];
+
+  // ─── FAQ ACCORDION ────────────────────────────────────────────────────────
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // ─── HERO PARALLAX ────────────────────────────────────────────────────────
+  heroEl.addEventListener('mousemove', e => {
+    const { clientX, clientY } = e;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const dx = (clientX - cx) / cx;
+    const dy = (clientY - cy) / cy;
+    document.querySelectorAll('.hero-slide.active').forEach(slide => {
+      slide.style.transform = `scale(1.04) translate(${dx * -8}px, ${dy * -6}px)`;
+    });
+  });
+  heroEl.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.hero-slide').forEach(s => { s.style.transform = ''; });
+  });
+</script>
+
+<script type="text/babel">
+  import { useTweaks, TweaksPanel, TweakSlider, TweakRadio, TweakColor, TweakToggle } from './tweaks-panel';
+  import messages from '../../messages/en.json';
+
+  const TWEAK_DEFAULTS = {
+    primaryColor: '#D97757',
+    fontSize: 16,
+    density: 'regular',
+    dark: false,
+  };
+
+  function App() {
+    const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+    return (
+      <div style={{ fontSize: tweaks.fontSize, color: tweaks.primaryColor }}>
+        <header style={{ background: tweaks.dark ? '#333' : '#fff', color: tweaks.dark ? '#fff' : '#000' }}>
+          <h1>{messages.common.appName}</h1>
+        </header>
+        <main>
+          <p>{messages.common.loading}</p>
+        </main>
+        <TweaksPanel>
+          <TweakSlider label="Font Size" value={tweaks.fontSize} min={10} max={32} unit="px" onChange={(v) => setTweak('fontSize', v)} />
+          <TweakColor label="Primary Color" value={tweaks.primaryColor} onChange={(v) => setTweak('primaryColor', v)} />
+          <TweakToggle label="Dark Mode" value={tweaks.dark} onChange={(v) => setTweak('dark', v)} />
+        </TweaksPanel>
+      </div>
+    );
+  }
+
+  ReactDOM.render(<App />, document.getElementById('root'));
+</script>

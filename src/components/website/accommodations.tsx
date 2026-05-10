@@ -1,170 +1,175 @@
-import { useTranslations } from "next-intl";
-import { ArrowUpRight } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { Reveal } from "./reveal";
 
-import { BENTO_TILE_CLASSES, type MockGer } from "@/lib/website/design";
+type GerCard = {
+  badgeKey: string;
+  titleKey: string;
+  descKey: string;
+  price: number;
+  image: string;
+};
 
-/**
- * What an accommodation looks like to this section. Both the live
- * `/api/public/gers` payload and the {@link MockGer} mock fixture
- * already match this shape, so the page is free to pass either source
- * in — the section can't tell the difference.
- */
-export type AccommodationItem = MockGer;
+const GERS: GerCard[] = [
+  {
+    badgeKey: "accomm.cards.deluxe.badge",
+    titleKey: "accomm.cards.deluxe.title",
+    descKey: "accomm.cards.deluxe.desc",
+    price: 385000,
+    image:
+      "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=900&q=80",
+  },
+  {
+    badgeKey: "accomm.cards.standard.badge",
+    titleKey: "accomm.cards.standard.title",
+    descKey: "accomm.cards.standard.desc",
+    price: 195000,
+    image:
+      "https://images.unsplash.com/photo-1478827536114-da961b7f86d2?w=600&q=80",
+  },
+  {
+    badgeKey: "accomm.cards.lakeview.badge",
+    titleKey: "accomm.cards.lakeview.title",
+    descKey: "accomm.cards.lakeview.desc",
+    price: 290000,
+    image:
+      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&q=80",
+  },
+  {
+    badgeKey: "accomm.cards.family.badge",
+    titleKey: "accomm.cards.family.title",
+    descKey: "accomm.cards.family.desc",
+    price: 320000,
+    image:
+      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=700&q=80",
+  },
+  {
+    badgeKey: "accomm.cards.glamping.badge",
+    titleKey: "accomm.cards.glamping.title",
+    descKey: "accomm.cards.glamping.desc",
+    price: 240000,
+    image:
+      "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=700&q=80",
+  },
+  {
+    badgeKey: "accomm.cards.cabin.badge",
+    titleKey: "accomm.cards.cabin.title",
+    descKey: "accomm.cards.cabin.desc",
+    price: 155000,
+    image:
+      "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=700&q=80",
+  },
+];
 
-/**
- * Bento grid of accommodations.
- *
- * Server component — no client state. The asymmetric layout comes from
- * {@link BENTO_TILE_CLASSES}; rearrange tiles there without touching any
- * markup. We use plain <img> (lazy-loaded) so swapping image sources
- * doesn't require touching next.config images.remotePatterns.
- */
-export function Accommodations({ items }: { items: AccommodationItem[] }) {
-  const t = useTranslations("website.stay");
-  // Fallback: if the live data is empty (e.g. fresh DB), the page is in
-  // charge of supplying the mock list. Render an empty hint here only
-  // if even that is missing.
-  if (items.length === 0) {
-    return (
-      <section
-        id="stay"
-        className="bg-tsaidam-cream px-4 py-32 sm:px-6 lg:px-8"
-      >
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.42em] text-tsaidam-clay">
-            {t("eyebrow")}
-          </p>
-          <h2 className="mt-4 font-serif text-4xl font-light text-tsaidam-ink sm:text-5xl">
-            {t("title")}
-          </h2>
-          <p className="mt-12 text-tsaidam-ink/60">{t("empty")}</p>
-        </div>
-      </section>
-    );
-  }
+// Asymmetric desktop grid placement (matches the design prototype)
+const SPAN_CLASSES = [
+  "lg:col-span-6 lg:row-span-1 lg:h-[360px]", // hero card
+  "lg:col-span-3 lg:h-[360px]",
+  "lg:col-span-3 lg:h-[360px]",
+  "lg:col-span-4 lg:h-[280px]",
+  "lg:col-span-4 lg:h-[280px]",
+  "lg:col-span-4 lg:h-[280px]",
+];
+
+const fmtPrice = (n: number) => `₮${n.toLocaleString("mn-MN")}`;
+
+export async function Accommodations() {
+  const t = await getTranslations("website");
 
   return (
     <section
-      id="stay"
-      className="bg-tsaidam-cream px-4 py-32 sm:px-6 lg:px-8"
+      id="accommodations"
+      className="bg-[var(--color-tsaidam-cream)] px-6 py-20 sm:px-10 lg:px-16 lg:py-32"
     >
-      <div className="mx-auto max-w-7xl">
-        {/* Section header */}
-        <div className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.42em] text-tsaidam-clay">
-            {t("eyebrow")}
-          </p>
-          <h2 className="mt-4 font-serif text-4xl font-light leading-tight text-tsaidam-ink sm:text-5xl md:text-6xl">
-            {t("title")}
-          </h2>
-          <p className="mt-6 text-base leading-relaxed text-tsaidam-ink/65">
-            {t("subtitle")}
+      <Reveal className="mb-12 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <SectionLabel>{t("accomm.eyebrow")}</SectionLabel>
+          <h2
+            className="mt-3 max-w-xl font-serif-display text-4xl font-medium leading-tight text-[var(--color-tsaidam-ink)] text-balance sm:text-5xl"
+            dangerouslySetInnerHTML={{
+              __html: t.raw("accomm.heading") as string,
+            }}
+          />
+          <p className="mt-3 max-w-md text-base font-light leading-relaxed text-[var(--color-tsaidam-ink-mid)]">
+            {t("accomm.sub")}
           </p>
         </div>
+        <p className="text-sm text-[var(--color-tsaidam-ink-soft)]">
+          {t("accomm.showing", { count: GERS.length })}{" "}
+          <a
+            href="#"
+            className="ml-2 text-[var(--color-tsaidam-clay)] hover:underline"
+          >
+            {t("accomm.viewAll")} →
+          </a>
+        </p>
+      </Reveal>
 
-        {/* Asymmetric Bento grid. Each tile picks its span from
-            BENTO_TILE_CLASSES by index; extra items fall back to a
-            standard 1×1 cell so adding rooms never breaks the layout. */}
-        <div className="grid auto-rows-[minmax(220px,1fr)] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-          {items.map((item, i) => (
-            <AccommodationCard
-              key={item.id}
-              item={item}
-              tileClass={
-                BENTO_TILE_CLASSES[i] ?? "lg:col-span-1 lg:row-span-1"
-              }
-              priority={i === 0}
+      <Reveal
+        delay={2}
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12"
+      >
+        {GERS.map((g, i) => (
+          <article
+            key={g.titleKey}
+            className={`group relative h-[280px] cursor-pointer overflow-hidden rounded-sm bg-[var(--color-tsaidam-sand)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_48px_oklch(0.1_0.04_155_/_0.18)] ${SPAN_CLASSES[i]}`}
+          >
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              style={{ backgroundImage: `url('${g.image}')` }}
             />
-          ))}
-        </div>
-      </div>
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to top, oklch(0.12 0.02 60 / 0.88) 0%, oklch(0.12 0.02 60 / 0.2) 55%, transparent 100%)",
+              }}
+            />
+            <span className="absolute left-4 top-4 z-10 rounded-[1px] bg-[var(--color-tsaidam-clay)] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-white">
+              {t(g.badgeKey)}
+            </span>
+            <div className="absolute inset-x-0 bottom-0 z-10 px-5 py-5">
+              <h3
+                className={`font-serif-display font-medium leading-tight text-white ${
+                  i === 0 ? "text-2xl" : "text-lg"
+                }`}
+              >
+                {t(g.titleKey)}
+              </h3>
+              <p className="mt-1 mb-3 text-xs leading-snug text-white/70">
+                {t(g.descKey)}
+              </p>
+              <div className="flex items-center justify-between">
+                <div className="font-serif-display text-lg text-[var(--color-tsaidam-clay-lt)]">
+                  {fmtPrice(g.price)}{" "}
+                  <span className="font-sans text-xs font-light text-white/55">
+                    / {t("accomm.night")}
+                  </span>
+                </div>
+                <a
+                  href="#"
+                  className="border-b border-white/30 pb-px text-[10px] font-medium uppercase tracking-[0.1em] text-white/70 transition-colors hover:border-white hover:text-white"
+                >
+                  {t("accomm.viewDetails")} →
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </Reveal>
     </section>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Card
-// ---------------------------------------------------------------------------
-
-function AccommodationCard({
-  item,
-  tileClass,
-  priority,
-}: {
-  item: AccommodationItem;
-  tileClass: string;
-  priority?: boolean;
-}) {
-  const t = useTranslations("website.stay");
-
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <a
-      href={`#stay-${item.id}`}
-      className={[
-        "group relative isolate flex flex-col justify-end overflow-hidden rounded-[20px] bg-tsaidam-forest-deep transition-transform duration-500 hover:-translate-y-0.5",
-        tileClass,
-      ].join(" ")}
-    >
-      {/* Image */}
-      {item.image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={item.image_url}
-          alt={item.name}
-          loading={priority ? "eager" : "lazy"}
-          className="absolute inset-0 -z-10 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-        />
-      ) : (
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-tsaidam-forest to-tsaidam-clay" />
-      )}
-
-      {/* Bottom-up overlay for legibility */}
-      <div
+    <p className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.26em] text-[var(--color-tsaidam-ink-soft)]">
+      <span
         aria-hidden
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-tsaidam-ink/85 via-tsaidam-ink/30 to-transparent"
+        className="inline-block h-px w-7 bg-[var(--color-tsaidam-ink-soft)]"
       />
-
-      {/* Content */}
-      <div className="flex flex-col gap-3 p-6 sm:p-7">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="font-serif text-2xl font-light leading-tight text-tsaidam-cream sm:text-[1.65rem]">
-            {item.name}
-          </h3>
-          <span className="shrink-0 rounded-full border border-tsaidam-cream/40 bg-tsaidam-ink/30 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-tsaidam-cream/90 backdrop-blur-sm">
-            {t("capacity", { count: item.capacity })}
-          </span>
-        </div>
-
-        <div className="flex items-end justify-between gap-3 pt-1">
-          <div>
-            {item.price_per_night != null ? (
-              <p className="text-tsaidam-cream/80">
-                <span className="text-[10px] uppercase tracking-[0.22em] text-tsaidam-sand/90">
-                  {t("from")}
-                </span>
-                <span className="ml-2 font-serif text-xl font-medium text-tsaidam-cream">
-                  ₮{item.price_per_night.toLocaleString()}
-                </span>
-                <span className="ml-1 text-[11px] uppercase tracking-[0.18em] text-tsaidam-cream/65">
-                  / {t("perNight")}
-                </span>
-              </p>
-            ) : (
-              <span className="text-[11px] uppercase tracking-[0.22em] text-tsaidam-cream/70">
-                {item.type}
-              </span>
-            )}
-          </div>
-
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.22em] text-tsaidam-cream transition-colors group-hover:text-tsaidam-sand">
-            {t("viewDetails")}
-            <ArrowUpRight
-              className="size-3.5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-              strokeWidth={1.5}
-            />
-          </span>
-        </div>
-      </div>
-    </a>
+      {children}
+    </p>
   );
 }

@@ -353,56 +353,194 @@
     "csvParseError": "Couldn't parse CSV"
   },
   "website": {
-    "hero": {
-      "title": "Tsaidam Tourist Camp",
-      "subtitle": "In the heart of Mongolia's stunning nature",
-      "comingSoon": "Online booking opens soon — please contact us directly for now.",
-      "headline": "Experience Serenity at Tsaidam",
-      "tagline": "A quiet luxury of canvas, fire, and open sky — minutes from the steppe, miles from the noise.",
-      "cta": "Begin Your Journey"
-    },
     "nav": {
       "home": "Home",
       "gers": "Accommodations",
+      "experience": "Experience",
       "programs": "Programs",
       "gallery": "Gallery",
-      "booking": "Book Now",
-      "story": "Our Story",
-      "contact": "Contact"
+      "contact": "Contact",
+      "booking": "Book Now"
     },
-    "quickBook": {
-      "checkIn": "Check-in",
-      "checkOut": "Check-out",
-      "guests": "Guests",
-      "guest": "{count, plural, =1 {# guest} other {# guests}}",
-      "search": "Search",
-      "title": "Reserve your stay"
-    },
-    "stay": {
-      "eyebrow": "Accommodations",
-      "title": "Where you'll rest",
-      "subtitle": "A small collection of gers and cabins, each one shaped to feel like the landscape that holds it.",
-      "perNight": "per night",
-      "from": "from",
-      "viewDetails": "View details",
-      "capacity": "{count} guests",
-      "empty": "Accommodations are being prepared — check back soon."
+    "hero": {
+      "eyebrow": "Mongolia · Arkhangai · Since 2012",
+      "title": "Experience <em>Serenity</em><br/>at Tsaidam",
+      "subtitle": "Nestled between ancient steppes and crystal lakes — a luxury glamping escape where Mongolian tradition meets refined comfort.",
+      "cta": "Explore Stays"
     },
     "booking": {
-      "title": "Online Booking",
-      "selectDates": "Select your dates",
-      "selectGer": "Choose your ger",
-      "yourName": "Your name",
-      "yourPhone": "Phone number",
-      "yourEmail": "Email address",
-      "guestCount": "Number of guests",
-      "submit": "Submit Booking",
-      "success": "Booking submitted successfully!",
-      "successMessage": "We will contact you shortly."
+      "checkin": "Check-in",
+      "checkout": "Check-out",
+      "guests": "Guests",
+      "guestN": "{n} guest",
+      "guestPlus": "{n}+ guests",
+      "search": "Search"
+    },
+    "intro": {
+      "gers": "Luxury Gers & Cabins",
+      "elevation": "Above Sea Level",
+      "satisfaction": "Guest Satisfaction"
+    },
+    "accomm": {
+      "eyebrow": "Where You'll Stay",
+      "heading": "Our <em>Accommodations</em>",
+      "sub": "Each ger and cabin is thoughtfully appointed — hand-stitched textiles, wood-burning stoves, and panoramic nature views.",
+      "showing": "Showing {count} stays",
+      "viewAll": "View all",
+      "viewDetails": "View details",
+      "night": "night",
+      "cards": {
+        "deluxe": {
+          "badge": "Signature",
+          "title": "Deluxe Ger Suite",
+          "desc": "Hand-loomed textiles, king bed, private deck"
+        },
+        "standard": {
+          "badge": "Classic",
+          "title": "Standard Ger",
+          "desc": "Cozy & authentic"
+        },
+        "lakeview": {
+          "badge": "New",
+          "title": "Lakeview Cabin",
+          "desc": "Panoramic water views"
+        },
+        "family": {
+          "badge": "Family",
+          "title": "Family Ger",
+          "desc": "Two rooms, up to 6 guests"
+        },
+        "glamping": {
+          "badge": "Popular",
+          "title": "Glamping Tent",
+          "desc": "Canvas & wood, stargazing skylight"
+        },
+        "cabin": {
+          "badge": "Cozy",
+          "title": "Staff Cabin",
+          "desc": "Minimalist, private retreat"
+        }
+      }
+    },
+    "experience": {
+      "eyebrow": "The Tsaidam Way",
+      "heading": "A Stay Beyond<br/><em>the Ordinary</em>",
+      "sub": "Every detail of your stay is curated — from sunrise horseback rides across the steppe to candlelit traditional banquets under the stars.",
+      "f1": {
+        "title": "Immersive Nomadic Culture",
+        "desc": "Learn to brew airag, build a ger, and navigate by the stars with our local guides."
+      },
+      "f2": {
+        "title": "Farm-to-Table Cuisine",
+        "desc": "Chef-prepared meals using ingredients sourced from surrounding herder communities."
+      },
+      "f3": {
+        "title": "Tailored Expeditions",
+        "desc": "Eagle hunting, glacier trekking, and desert camel safaris — all arranged for you."
+      }
+    },
+    "testi": {
+      "eyebrow": "Guest Stories",
+      "heading": "Words from <em>Our Guests</em>",
+      "t1": {
+        "text": "Waking up to the sound of wind on the steppe, opening the ger door to a sea of wildflowers — nothing in a luxury hotel has ever come close to this.",
+        "author": "Élise Moreau",
+        "country": "Paris, France"
+      },
+      "t2": {
+        "text": "The staff remembered our names, our dietary preferences, our anniversary. The thoughtfulness was extraordinary. We'll return every year.",
+        "author": "James & Sarah T.",
+        "country": "Toronto, Canada"
+      },
+      "t3": {
+        "text": "A genuinely transformative experience. The Deluxe Ger was warmer than any hotel room, and the bonfire banquets under the Milky Way — unforgettable.",
+        "author": "Kenji Watanabe",
+        "country": "Tokyo, Japan"
+      }
+    },
+    "programs": {
+      "eyebrow": "What To Do",
+      "heading": "Curated <em>Experiences</em>",
+      "p1": {
+        "title": "Horse Riding",
+        "desc": "Guided rides across open steppe at dawn or dusk."
+      },
+      "p2": {
+        "title": "Stargazing",
+        "desc": "Zero light pollution — the Milky Way fills the sky."
+      },
+      "p3": {
+        "title": "Bonfire Banquet",
+        "desc": "Traditional Mongolian feast under an open sky."
+      },
+      "p4": {
+        "title": "Lake Trekking",
+        "desc": "Crystal alpine lakes hidden in the Khangai mountains."
+      }
+    },
+    "findus": {
+      "eyebrow": "How to Reach Us",
+      "heading": "Find Us in the<br/><em>Heart of Arkhangai</em>",
+      "sub": "Tsaidam Tourist Camp is nestled in the Bayan soum of Arkhangai Province — roughly a 6-hour scenic drive from Ulaanbaatar.",
+      "addressTitle": "Address",
+      "addressLine1": "GRQR+3JF, Bayan, Arkhangai, 65019",
+      "addressLine2": "Arkhangai Province, Mongolia",
+      "gettingTitle": "Getting Here",
+      "gettingLine1": "~6 hrs by car from Ulaanbaatar via A0401",
+      "gettingLine2": "Airport transfers available on request",
+      "openMaps": "Open in Google Maps"
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "heading": "Frequently<br/><em>Asked</em>",
+      "sub": "Everything you need to know before your stay. Can't find an answer? Write to us directly.",
+      "contact": "Contact Us",
+      "q1": {
+        "q": "What is the best time to visit?",
+        "a": "The camp is open from June through September. July and August offer the warmest weather and the most vibrant steppe landscape, while June and September bring cooler temperatures and fewer visitors — ideal for a more private retreat."
+      },
+      "q2": {
+        "q": "How do I get to Tsaidam?",
+        "a": "The camp is located in Bayan soum, Arkhangai Province — approximately 6 hours by vehicle from Ulaanbaatar. We offer airport transfer services upon request. The nearest town is Tsetserleg, about 90 km away."
+      },
+      "q3": {
+        "q": "Is there Wi-Fi or phone signal?",
+        "a": "Tsaidam is intentionally off the grid — part of the experience. There is no Wi-Fi, and mobile signal is minimal. Emergency satellite communication is available at the camp office. We encourage guests to fully disconnect."
+      },
+      "q4": {
+        "q": "What is included in the stay?",
+        "a": "All stays include three daily meals (breakfast, lunch, dinner) prepared by our on-site chef, one guided activity of your choice, and access to all shared camp facilities. Premium activities such as eagle hunting or multi-day treks are priced separately."
+      },
+      "q5": {
+        "q": "What should I pack?",
+        "a": "Layers are key — mornings and evenings can be cold even in summer. We recommend sturdy walking shoes, sunscreen, a warm jacket, and a camera. Bedding, towels, and basic toiletries are all provided in your ger or cabin."
+      }
     },
     "footer": {
-      "tagline": "Mongolian glamping, by the salt lake.",
-      "rights": "All rights reserved."
+      "tagline": "Luxury glamping in the heart of Mongolia's pristine wilderness.",
+      "stayTitle": "Stay",
+      "stay": {
+        "luxury": "Luxury Ger",
+        "deluxe": "Deluxe Ger",
+        "standard": "Standard Cabin",
+        "family": "Family Ger"
+      },
+      "exploreTitle": "Explore",
+      "explore": {
+        "horse": "Horse Riding",
+        "eagle": "Eagle Hunting",
+        "stargazing": "Stargazing",
+        "culture": "Cultural Programs"
+      },
+      "campTitle": "Camp",
+      "camp": {
+        "about": "About Us",
+        "gallery": "Gallery",
+        "contact": "Contact"
+      },
+      "copyright": "Tsaidam Tourist Camp, Mongolia",
+      "privacy": "Privacy",
+      "terms": "Terms"
     }
   },
   "cms": {
@@ -433,7 +571,7 @@
       "captionEn": "Caption (EN)",
       "category": "Category",
       "categoryHint": "Optional grouping, e.g. gers / nature / food.",
-      "empty": "No images yet — add your first.",
+      "empty": "No images yet â€” add your first.",
       "deleted": "Image removed"
     },
     "promotions": {

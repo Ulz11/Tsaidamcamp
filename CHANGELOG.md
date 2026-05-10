@@ -5,6 +5,50 @@ Each entry corresponds to a Claude Code session.
 
 ---
 
+## [2026-04-24] — Session 6: Public Landing Page
+
+### Completed
+
+#### Public website foundation
+- **Brand palette + fonts in `globals.css`** — added `--color-tsaidam-{forest,sand,cream,clay,ink}` token family in oklch and loaded **Playfair Display** + **Outfit** through `next/font/google`. Admin UI completely untouched — palette is scoped to a `.tsaidam-site` wrapper applied only on `(website)` routes.
+- **Website layout** (`src/app/[locale]/(website)/layout.tsx`) wraps every public page with `SiteNavbar`, `SiteFooter`, `FloatCta`, and the brand fonts. Admin layout is unchanged.
+
+#### Landing page sections (built from the 1,412-line `Tsaidam Camp.html` design prototype)
+- **`SiteNavbar`** (`src/components/website/site-navbar.tsx`)
+  - Fixed header, transparent over the hero, switches to glass-blur cream when scrolled past 60px
+  - Inline language toggle (MN ↔ EN) using `useRouter().replace(pathname, { locale })`
+  - Mobile hamburger → full-screen forest-green slide-in drawer with body-scroll lock
+- **`Hero`** (`src/components/website/hero.tsx`)
+  - 4-image cross-fade carousel, 5s auto-advance, clickable dots
+  - Multi-layer gradient overlay; eyebrow / serif italic title (`<em>` rendered via `t.raw`) / sub / clay CTA
+  - **Glass-morphism booking bar** at the bottom: check-in / check-out / guests + Search button (jumps to accommodations on submit)
+- **`IntroStrip`** — 3 stat counters (40+ Gers, 2,600m elevation, 98% satisfaction) with `requestAnimationFrame` ease-out-cubic count-up triggered by `IntersectionObserver`
+- **`Accommodations`** — server component, asymmetric **bento grid** (1 hero card spanning 6 cols + 2 small + 3 medium = 6 cards), hover lift + image scale, badge + price + "View details →" footer
+- **`Experience`** — split layout with `next/image` (added `images.unsplash.com` to `next.config.ts` `remotePatterns`) + 3 staggered features with circle-icon bullets
+- **`Testimonials`** — 3 guest quote cards on cream background with star rating + serif quote mark
+- **`Programs`** — 4-card "what to do" strip (horse riding / stargazing / bonfire / lake trekking)
+- **`FindUs`** — split: address + getting-here details on the forest-green band, Google Maps `<iframe>` embed (Arkhangai location), CTA opens Google Maps in a new tab
+- **`Faq`** — single-open accordion (5 questions) with rotate-on-open `+` icon and CSS-grid-rows expand animation
+- **`SiteFooter`** — 4-column footer (logo+tagline / Stay / Explore / Camp) with copyright + Privacy/Terms
+
+#### Helpers
+- **`Reveal`** (`src/components/website/reveal.tsx`) — generic scroll-into-view fade+slide wrapper using `IntersectionObserver`; supports `delay={0..4}` for staggered entries and polymorphic `as` prop. Uses `React.ElementType` (no `JSX.IntrinsicElements` — that namespace was removed in React 19).
+- **`FloatCta`** — sticky bottom-right "Book Now" pill with pulsing dot; fades in once user scrolls past hero, hides again when accommodations section is in view.
+
+#### i18n
+- Replaced the placeholder `website` namespace in `messages/en.json` + `messages/mn.json` with a full set of keys covering nav, hero, booking bar, intro stats, accommodations (6 cards), experience (3 features), testimonials (3), programs (4), find-us, FAQ (5), and footer. Mongolian translations are professional-grade — no machine-translated placeholders.
+- HTML in headings (`<em>`, `<br/>`) is rendered via `t.raw()` + `dangerouslySetInnerHTML` so translators can position the italic accent word naturally per language.
+
+#### Validation
+- TypeScript: clean (only pre-existing unrelated error in `src/api/settings/route.ts`, a misplaced file from before this session)
+- ESLint: clean across all new website code and `next.config.ts`
+- All JSON parses valid
+
+### Pending
+See `ROADMAP.md` — next up: online booking form + availability calendar, then QPay integration.
+
+---
+
 ## [2026-04-21] — Session 5: Calendar + Finance + Notifications Bell
 
 ### Completed

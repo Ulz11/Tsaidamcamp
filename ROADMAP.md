@@ -16,17 +16,16 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 | Bed configuration per ger | ✅ | JSONB beds, custom sizes |
 | Undo-toast delete (bookings) | ✅ | 6s window, optimistic |
 | Undo-toast delete (gers) | ✅ | 6s window, optimistic |
-| Undo-toast delete (operators) | ✅ | 6s window, optimistic |
-| Undo-toast delete (guests) | ✅ | 6s window, optimistic |
-| Undo-toast delete (finance/transactions) | ✅ | 6s window, optimistic |
 | Quick-book button per ger row | ✅ | Auto-opens booking dialog |
 | Slim booking dialogs (Essentials + Advanced) | ✅ | Applied to bookings-list + gers page |
-| Guests management page | ✅ | Basic CRUD |
+| Undo-toast delete (operators) | ✅ | Optimistic + 6s undo, cascade warning in toast |
+| Undo-toast delete (guests) | ✅ | Optimistic + 6s undo |
+| Undo-toast delete (finance/transactions) | ✅ | Signed amount + description in toast |
+| Guests management page | ✅ | Basic CRUD (page already existed) |
 | Dashboard UI/UX redesign | ✅ | Colored stat cards, progress bar, enriched lists |
 | Calendar view (per-ger Gantt) | ✅ | Month view, one row per ger + Unassigned section |
 | Finance page improvements | ✅ | Accent-badge KPIs + MoM delta, area chart, income pie, monthly breakdown list |
 | Notifications / alerts | ✅ | Header bell: arrivals/departures today + overdue payments, 2-min polling |
-| Website CMS (gallery / promotions / news) | ✅ | Tabs page at /admin/website with full CRUD + undo-toast |
 | Bulk operations | ⬜ | Multi-select bookings for status updates |
 
 ### Multi-language
@@ -40,20 +39,19 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 
 ## Public-Facing Site
 
-The front-end is built separately with Claude-Design and consumes
-this app's `/api/public/*` endpoints (CORS-enabled). Only the
-back-end and the admin CMS live in this repo.
-
 | Feature | Status | Notes |
 |---|---|---|
+| Landing page | ✅ | Hero carousel, bento grid, experience, testimonials, programs, find-us, FAQ, footer — fully bilingual |
 | `/api/public/gers` (read) | ✅ | Anon RLS; only `is_available=true` |
-| `/api/public/programs` (read) | ✅ | Anon RLS; only `is_active=true` |
 | `/api/public/gallery` (read) | ✅ | Anon RLS; ordered by `sort_order` |
 | `/api/public/promotions` (read) | ✅ | Filters expired (`ends_on >= today`) |
 | `/api/public/news` + `/news/[slug]` (read) | ✅ | Only `is_published=true` |
 | `/api/public/availability` (read) | ✅ | `?from=&to=` returns total/available/occupied |
 | `/api/public/bookings` (write) | ✅ | Locked schema, source="website", status="tentative" |
 | CORS headers for public API | ✅ | Origin from `PUBLIC_WEB_ORIGIN` env, default `*` |
+| Website CMS (gallery / promotions / news) | ✅ | Admin tabs at /admin/website, full CRUD + undo-toast |
+| Online booking form | ⬜ | Guest self-service (next priority) |
+| Availability calendar (public) | ⬜ | Shows available gers by date |
 | Booking confirmation emails | ⬜ | Requires email service integration |
 | Payment integration | ⬜ | QPay or similar Mongolian gateway |
 
@@ -69,17 +67,19 @@ back-end and the admin CMS live in this repo.
 | Gallery / promotions / news tables + RLS | ✅ | Migration 005 |
 | Supabase Storage (images) | ⬜ | Ger photos |
 | Vercel deployment | ⬜ | CI/CD pipeline |
-| Environment variables (prod) | ⬜ | Supabase prod keys, `PUBLIC_WEB_ORIGIN` |
+| Environment variables (prod) | ⬜ | Supabase prod keys |
 | Auto-push to GitHub | ✅ | Claude Code Stop hook configured |
 
 ---
 
 ## Next Up (Priority Order)
-1. ⬜ Bulk operations (multi-select bookings for status updates)
-2. ⬜ Booking confirmation emails (transactional)
-3. ⬜ Supabase Storage uploads for gallery / cover images (replace URL-paste)
-4. ⬜ Vercel deployment setup with `PUBLIC_WEB_ORIGIN`
-5. ⬜ i18n audit (find missing keys across all admin pages)
+1. ⬜ Online booking form + public availability calendar
+2. ⬜ QPay payment integration
+3. ⬜ Booking confirmation emails (Resend)
+4. ⬜ Supabase Storage for ger photos (replace Unsplash placeholders on landing page)
+5. ⬜ Vercel production deployment + custom domain
+6. ⬜ Bulk operations (multi-select bookings for status updates)
+7. ⬜ i18n audit (find missing keys across all admin pages)
 
 ---
 
