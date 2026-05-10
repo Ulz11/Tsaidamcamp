@@ -542,5 +542,74 @@
       "privacy": "Privacy",
       "terms": "Terms"
     }
+  },
+  "cms": {
+    "title": "Website",
+    "subtitle": "Manage gallery, promotions, and news for the public site.",
+    "tabs": {
+      "gallery": "Gallery",
+      "promotions": "Promotions",
+      "news": "News"
+    },
+    "common": {
+      "published": "Published",
+      "active": "Active",
+      "draft": "Draft",
+      "live": "Live",
+      "preview": "Preview",
+      "sortOrder": "Order",
+      "image": "Image"
+    },
+    "gallery": {
+      "title": "Gallery images",
+      "addImage": "Add image",
+      "editImage": "Edit image",
+      "url": "Image URL",
+      "urlHint": "Paste a public URL (Supabase Storage, Cloudinary, etc).",
+      "urlInvalid": "Must be a valid URL",
+      "captionMn": "Caption (MN)",
+      "captionEn": "Caption (EN)",
+      "category": "Category",
+      "categoryHint": "Optional grouping, e.g. gers / nature / food.",
+      "empty": "No images yet â€” add your first.",
+      "deleted": "Image removed"
+    },
+    "promotions": {
+      "title": "Promotions",
+      "addPromotion": "Add promotion",
+      "editPromotion": "Edit promotion",
+      "titleMn": "Title (MN)",
+      "titleEn": "Title (EN)",
+      "descriptionMn": "Description (MN)",
+      "descriptionEn": "Description (EN)",
+      "discountLabel": "Badge label",
+      "discountLabelHint": "e.g. 20% OFF, Family deal",
+      "startsOn": "Starts on",
+      "endsOn": "Ends on",
+      "imageUrl": "Image URL",
+      "empty": "No promotions yet.",
+      "deleted": "Promotion removed",
+      "titleRequired": "Title (MN) is required"
+    },
+    "news": {
+      "title": "News posts",
+      "addPost": "Add post",
+      "editPost": "Edit post",
+      "slug": "Slug",
+      "slugHint": "URL-safe identifier (e.g. summer-2026-opening).",
+      "slugInvalid": "Use lowercase letters, digits, and hyphens.",
+      "titleMn": "Title (MN)",
+      "titleEn": "Title (EN)",
+      "excerptMn": "Excerpt (MN)",
+      "excerptEn": "Excerpt (EN)",
+      "bodyMn": "Body (MN)",
+      "bodyEn": "Body (EN)",
+      "coverImage": "Cover image URL",
+      "publishedAt": "Published at",
+      "empty": "No news posts yet.",
+      "deleted": "Post removed",
+      "titleRequired": "Title (MN) is required",
+      "slugRequired": "Slug is required"
+    }
   }
 }

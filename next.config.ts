@@ -21,6 +21,25 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
+  // CORS for the public API. The public website front-end is built
+  // separately (Claude-Design) and will live on a different origin,
+  // so /api/public/* must accept cross-origin reads + the booking POST.
+  // PUBLIC_WEB_ORIGIN can pin this down once the domain is known;
+  // unset → "*" for ease of local development.
+  async headers() {
+    const origin = process.env.PUBLIC_WEB_ORIGIN || "*";
+    return [
+      {
+        source: "/api/public/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: origin },
+          { key: "Access-Control-Allow-Methods", value: "GET, POST, OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type" },
+          { key: "Access-Control-Max-Age", value: "86400" },
+        ],
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

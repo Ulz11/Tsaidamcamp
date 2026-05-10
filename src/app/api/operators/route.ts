@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
+    console.error("[api/operators]", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

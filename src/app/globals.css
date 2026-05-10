@@ -10,6 +10,17 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  /* Public website (Tsaidam) tokens — kept separate from the admin theme so
+     the design can be re-skinned without touching admin surfaces. Edit the
+     values under `:root` (further down) to retheme the marketing site. */
+  --font-serif: var(--font-serif-display);
+  --color-tsaidam-forest: var(--tsaidam-forest);
+  --color-tsaidam-forest-deep: var(--tsaidam-forest-deep);
+  --color-tsaidam-clay: var(--tsaidam-clay);
+  --color-tsaidam-sand: var(--tsaidam-sand);
+  --color-tsaidam-cream: var(--tsaidam-cream);
+  --color-tsaidam-ink: var(--tsaidam-ink);
+  --color-tsaidam-mist: var(--tsaidam-mist);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -81,6 +92,18 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* === Tsaidam (public website) palette ===========================
+     Earth-tone, glamping-luxury palette. These are independent of the
+     admin design tokens above — change them here to re-skin the
+     marketing site without touching the admin app. */
+  --tsaidam-forest:      oklch(0.36 0.05 145);  /* deep forest green   */
+  --tsaidam-forest-deep: oklch(0.24 0.04 150);  /* almost-black green  */
+  --tsaidam-clay:        oklch(0.52 0.08  45);  /* warm clay brown     */
+  --tsaidam-sand:        oklch(0.84 0.045 80);  /* soft sand           */
+  --tsaidam-cream:       oklch(0.96 0.015 85);  /* off-white parchment */
+  --tsaidam-ink:         oklch(0.22 0.015 60);  /* near-black warm     */
+  --tsaidam-mist:        oklch(0.92 0.012 80);  /* faint warm grey     */
 }
 
 .dark {

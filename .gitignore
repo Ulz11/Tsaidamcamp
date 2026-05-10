@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code — per-machine settings (often contains tokens / cwd-specific
+# permissions; never commit). Project-wide settings still live in
+# `.claude/settings.json`, which IS tracked.
+.claude/settings.local.json
+.claude/**/settings.local.json

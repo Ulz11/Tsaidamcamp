@@ -542,5 +542,74 @@
       "privacy": "Нууцлал",
       "terms": "Үйлчилгээний нөхцөл"
     }
+  },
+  "cms": {
+    "title": "Вэбсайт",
+    "subtitle": "Олон нийтийн вэбсайтын галерей, урамшуулал, мэдээллийг удирдана.",
+    "tabs": {
+      "gallery": "Галерей",
+      "promotions": "Урамшуулал",
+      "news": "Мэдээ"
+    },
+    "common": {
+      "published": "Нийтлэгдсэн",
+      "active": "Идэвхтэй",
+      "draft": "Ноорог",
+      "live": "Нийтэлсэн",
+      "preview": "Урьдчилан үзэх",
+      "sortOrder": "Эрэмбэ",
+      "image": "Зураг"
+    },
+    "gallery": {
+      "title": "Галерейн зургууд",
+      "addImage": "Зураг нэмэх",
+      "editImage": "Зураг засах",
+      "url": "Зургийн URL",
+      "urlHint": "Олон нийтэд нээлттэй URL оруулна (Supabase Storage, Cloudinary гэх мэт).",
+      "urlInvalid": "Зөв URL оруулна уу",
+      "captionMn": "Тайлбар (MN)",
+      "captionEn": "Тайлбар (EN)",
+      "category": "Ангилал",
+      "categoryHint": "Сонголтоор бүлэглэх, ж.нь. гэр / байгаль / хоол.",
+      "empty": "Одоогоор зураг байхгүй — эхнийхээ нэмнэ үү.",
+      "deleted": "Зураг хасагдлаа"
+    },
+    "promotions": {
+      "title": "Урамшуулал",
+      "addPromotion": "Урамшуулал нэмэх",
+      "editPromotion": "Урамшуулал засах",
+      "titleMn": "Гарчиг (MN)",
+      "titleEn": "Гарчиг (EN)",
+      "descriptionMn": "Тайлбар (MN)",
+      "descriptionEn": "Тайлбар (EN)",
+      "discountLabel": "Тэмдэгийн бичээс",
+      "discountLabelHint": "ж.нь. 20% хямдрал, Гэр бүлийн санал",
+      "startsOn": "Эхлэх огноо",
+      "endsOn": "Дуусах огноо",
+      "imageUrl": "Зургийн URL",
+      "empty": "Одоогоор урамшуулал байхгүй.",
+      "deleted": "Урамшуулал хасагдлаа",
+      "titleRequired": "Гарчиг (MN) шаардлагатай"
+    },
+    "news": {
+      "title": "Мэдээний нийтлэлүүд",
+      "addPost": "Нийтлэл нэмэх",
+      "editPost": "Нийтлэл засах",
+      "slug": "Слаг",
+      "slugHint": "URL-д тохирох тэмдэгт (ж.нь. summer-2026-opening).",
+      "slugInvalid": "Жижиг үсэг, тоо, зураас ашиглана уу.",
+      "titleMn": "Гарчиг (MN)",
+      "titleEn": "Гарчиг (EN)",
+      "excerptMn": "Хураангуй (MN)",
+      "excerptEn": "Хураангуй (EN)",
+      "bodyMn": "Агуулга (MN)",
+      "bodyEn": "Агуулга (EN)",
+      "coverImage": "Нүүр зургийн URL",
+      "publishedAt": "Нийтэлсэн огноо",
+      "empty": "Одоогоор мэдээ байхгүй.",
+      "deleted": "Нийтлэл хасагдлаа",
+      "titleRequired": "Гарчиг (MN) шаардлагатай",
+      "slugRequired": "Слаг шаардлагатай"
+    }
   }
 }

@@ -42,6 +42,14 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 | Feature | Status | Notes |
 |---|---|---|
 | Landing page | ✅ | Hero carousel, bento grid, experience, testimonials, programs, find-us, FAQ, footer — fully bilingual |
+| `/api/public/gers` (read) | ✅ | Anon RLS; only `is_available=true` |
+| `/api/public/gallery` (read) | ✅ | Anon RLS; ordered by `sort_order` |
+| `/api/public/promotions` (read) | ✅ | Filters expired (`ends_on >= today`) |
+| `/api/public/news` + `/news/[slug]` (read) | ✅ | Only `is_published=true` |
+| `/api/public/availability` (read) | ✅ | `?from=&to=` returns total/available/occupied |
+| `/api/public/bookings` (write) | ✅ | Locked schema, source="website", status="tentative" |
+| CORS headers for public API | ✅ | Origin from `PUBLIC_WEB_ORIGIN` env, default `*` |
+| Website CMS (gallery / promotions / news) | ✅ | Admin tabs at /admin/website, full CRUD + undo-toast |
 | Online booking form | ⬜ | Guest self-service (next priority) |
 | Availability calendar (public) | ⬜ | Shows available gers by date |
 | Booking confirmation emails | ⬜ | Requires email service integration |
@@ -53,9 +61,10 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 
 | Feature | Status | Notes |
 |---|---|---|
-| Supabase schema + RLS | ✅ | Migrations 001–004 applied |
+| Supabase schema + RLS | ✅ | Migrations 001–005 applied (005 applied 2026-04-29) |
 | Atomic booking RPC | ✅ | Migration 003 |
 | Beds + area columns | ✅ | Migration 004 |
+| Gallery / promotions / news tables + RLS | ✅ | Migration 005 |
 | Supabase Storage (images) | ⬜ | Ger photos |
 | Vercel deployment | ⬜ | CI/CD pipeline |
 | Environment variables (prod) | ⬜ | Supabase prod keys |
@@ -74,4 +83,4 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 
 ---
 
-*Last updated: 2026-04-24 (Session 6 — public landing page)*
+*Last updated: 2026-04-29*
