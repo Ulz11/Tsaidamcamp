@@ -1,179 +1,94 @@
-# Tsaidam Camp — Handoff Document
+# Tsaidam Camp — Handoff
 
-Paste this into the Claude session on the other laptop to get oriented instantly. Everything you need to continue building is below.
-
----
-
-## 1. Project Proposal
-
-**What it is.** A full management platform for **Tsaidam tourist camp** (40 gers, Khövsgöl region, May–September season). Replaces the current Excel + paper PDFs + phone-notes workflow with a single bilingual (MN/EN) web app.
-
-**Why it exists.** The manual workflow causes overbooking, lost bookings, wrong meal counts, and suboptimal ger allocation. Tour operators each email PDFs in different formats — the system parses any of them with Claude.
-
-**Scope in one diagram.**
-
-```
-Admin Dashboard (protected)          Public Website (marketing + online booking)
-├─ Dashboard (live KPIs)             ├─ Landing
-├─ Bookings (CRUD + calendar)        ├─ Gers (pulled from DB)
-├─ Calendar (Gantt, month view)      ├─ Programs
-├─ Gers (CRUD + drag-drop layout)    ├─ Gallery
-├─ Meals (daily kitchen sheet)       └─ Booking form
-├─ Operators (CRM + booking count)
-├─ Guests (directory)                ← Realtime: ger availability toggle
-├─ Finance (txn CRUD + CSV import)     mirrors to public site
-├─ Inbox (Gmail-forwarded PDFs)
-├─ Upload PDF (direct Claude parse)
-└─ Website CMS
-```
-
-**Success criteria.** By **2026-04-30** (Day 14, hard deadline):
-
-- Admin can paste any operator PDF → bookings appear in calendar with correct gers, dates, meals.
-- Kitchen gets a printable daily sheet with "13+4" style totals.
-- Public site takes online bookings that land as tentative in admin.
-- Finance page imports bank CSV and renders monthly summary.
-- Everything bilingual MN/EN, deployed on Vercel + Supabase.
-
-**Non-goals (explicitly out of scope).** Mobile native apps, payment gateway integration, multi-camp support, staff payroll beyond expense tracking, guest-facing loyalty features.
+A bilingual (MN/EN) management platform for **Tsaidam tourist camp** (40 gers, Khövsgöl region, May–September season). Replaces Excel + paper PDFs + phone notes with a single web app.
 
 ---
 
-## 2. Tech Stack (non-obvious choices)
+## What's built
+
+### Admin (`/[locale]/admin`)
+- **Dashboard** — live KPIs (arrivals/departures today, occupancy %, active bookings, pending payments)
+- **Bookings** — list/filter/CRUD, CSV import, status + payment fields, undo-toast deletes
+- **Gers** — CRUD + drag-drop camp-layout canvas, configurable beds (JSONB), area-based sizing
+- **Calendar** — per-ger Gantt month view + Unassigned tray
+- **Meals** — daily totals, printable kitchen sheet ("13+4" style)
+- **Guests** — searchable directory, linked to bookings
+- **Operators** — CRM with booking counts
+- **Finance** — transactions CRUD, CSV import, area chart + pies, MoM delta KPIs
+- **Notifications bell** — arrivals/departures today + overdue payments, 2-min polling
+- **Inbox** — Gmail-forwarded PDFs (optional, needs AI key)
+- **Upload-PDF** — drop a PDF, Claude parses, review, bulk import
+- **Website CMS** — gallery / promotions / news editor
+
+### Public site (`/[locale]`)
+- Landing page: hero carousel, bento accommodations, experience, testimonials, programs, find-us (Google Maps), FAQ, footer
+- Public read APIs for gers / gallery / promotions / news / availability
+- Public booking endpoint (anon RLS, source="website", status="tentative")
+
+---
+
+## Tech stack
 
 | Layer | Pick | Gotcha |
 |---|---|---|
-| Framework | **Next.js 16.2.4** (Turbopack, App Router) | This is NOT the Next.js in your training data. Read `node_modules/next/dist/docs/` before you write boilerplate. |
-| React | **19.2** | Server Components default. |
-| UI primitives | **@base-ui/react** | Not Radix, not shadcn. `Button` does NOT support `asChild`. Use `buttonVariants()` + `<Link className={...}>`, or `<DropdownMenuTrigger render={<Button />}>`. |
-| i18n | **next-intl 4** | Messages live in `messages/{en,mn}.json`. Client components use `useTranslations`, server components use `getTranslations` from `next-intl/server`. Namespaces: `common`, `auth`, `admin.*`, `booking`, `ger`, `meal`, `operator`, `finance`, `website.*`. |
-| DB | **Supabase** (Postgres + RLS) | Admin pages use anon key with RLS; webhook/service-role endpoints use `createAdminClient()`. |
-| PDF parsing | **Anthropic SDK** with native PDF input (base64 document block) | Model via `ANTHROPIC_PDF_MODEL` env, default `claude-sonnet-4-5`. System prompt uses `cache_control: { type: "ephemeral" }`. |
-| DnD | **@dnd-kit/core** | Used on the camp-layout canvas. |
-| Charts | **Recharts** | For finance. |
+| Framework | **Next.js 16.2.4** (App Router, Turbopack) | Conventions differ from training data — read `node_modules/next/dist/docs/` before writing boilerplate |
+| React | **19.2** | Server Components default |
+| UI | **@base-ui/react** | Not Radix. `Button` does not support `asChild`. Use `buttonVariants()` on `<Link>` or `<Trigger render={<Button />}>` |
+| i18n | **next-intl 4** | `messages/{en,mn}.json` — namespaces: `common`, `auth`, `admin.*`, `booking`, `ger`, `meal`, `operator`, `finance`, `website.*` |
+| DB | **Supabase** (Postgres + RLS) | Anon key for admin pages (RLS); `createAdminClient()` for service-role webhooks |
+| PDF parsing | **Anthropic SDK** (PDF document blocks + prompt caching) | Default model `claude-haiku-4-5-20251001`. Override via `ANTHROPIC_PDF_MODEL`. Key is **optional** — UI shows friendly fallback when absent |
+| Charts | **Recharts** | Finance only |
+| DnD | **@dnd-kit/core** | Camp-layout canvas + booking-tray assign |
 
 ---
 
-## 3. Current State (as of Day 8, 2026-04-18)
-
-### Built & working
-
-- Admin shell, sidebar, header, locale toggle, i18n setup
-- Login + auth guard
-- Bookings: list, filter, create/edit/cancel
-- Gers: CRUD + drag-drop layout canvas + availability toggle
-- Calendar: month-view Gantt with source-colored bars, stats strip, legend
-- Operators: full CRM (search, add/edit/delete with FK-aware warnings, booking count)
-- Upload PDF: drag-drop → Claude parse → review table → bulk import
-- Inbox: Gmail-forwarder → webhook → intake table → parse → import
-- Gmail Apps Script forwarder in `supabase/gmail-forwarder/`
-- Dashboard: live KPIs from Supabase with graceful "not configured" fallback
-
-### Resilience added recently
-
-- Dashboard and Gers pages detect unconfigured Supabase env (placeholder strings like `your-supabase-url`) and render a friendly amber banner instead of crashing.
-- `next.config.ts` pins `turbopack.root` to `process.cwd()` to silence stray-lockfile warnings from `C:\Users\Obama\pnpm-lock.yaml`.
-
-### Known broken / blocked
-
-- **`.env.local` still has placeholder values** — until real Supabase + Anthropic keys are set, every DB-backed page shows empty state. This is the #1 thing to fix on the new laptop.
-
-### Pending (ordered by impact)
-
-1. **Meals calculator** — daily view, sum tourists+staff across bookings, "13+4" display, printable kitchen sheet.
-2. **Guests directory** — searchable by name/passport/nationality, linked to bookings.
-3. **Finance** — transaction CRUD, CSV upload (Papa Parse), monthly summary with Recharts.
-4. **Public website** — landing, gers, programs, gallery, online booking form.
-5. **CMS** — admin editor for website text/images.
-6. **Settings page** — camp details, users, API keys surface.
-7. **Testing + polish + Vercel deploy**.
-
----
-
-## 4. Environment Setup (new laptop — do this first)
+## Local setup
 
 ```powershell
-# 1. Clone or copy the repo to the new laptop
-git clone <your-repo-url> tsaidam-camp
-cd tsaidam-camp
-
-# 2. Install dependencies
 npm install
 
-# 3. Create .env.local (copy from the old laptop verbatim, OR fill in)
-#    NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
-#    NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-#    SUPABASE_SERVICE_ROLE_KEY=eyJ...
-#    ANTHROPIC_API_KEY=sk-ant-...
-#    EMAIL_INTAKE_SECRET=<random-long-string>
-#    ANTHROPIC_PDF_MODEL=claude-sonnet-4-5   (optional)
+# .env.local — see existing file. Required:
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   SUPABASE_SERVICE_ROLE_KEY
+# Optional:
+#   ANTHROPIC_API_KEY        (enables PDF parsing — leave as placeholder to disable)
+#   ANTHROPIC_PDF_MODEL      (default: claude-haiku-4-5-20251001)
+#   EMAIL_INTAKE_SECRET      (only if using Gmail webhook)
 
-# 4. If Supabase project is new: apply migrations in order
-#    from supabase/migrations/: 001_schema.sql, 002_email_intake.sql, …
+# If using a new Supabase project, apply migrations in order:
+#   supabase/migrations/001..005
 
-# 5. Run
 npm run dev
 ```
 
-Verify by visiting `http://localhost:3000/en/admin` — the amber setup banner should be gone and live stats should load.
+Visit `http://localhost:3000/en/admin` (or `/mn/admin`). Without Supabase env, you'll see an amber "not configured" banner instead of a crash.
 
 ---
 
-## 5. Task Agenda for the Next Claude Session
+## Guardrails
 
-Give these to the next Claude session in order. Each has a clear finish line so it can verify before moving on.
-
-### Day 9 (resume here) — Meals Calculator
-
-**Scope.** Page at `/admin/meals` with a date picker. For the selected date, list all non-cancelled bookings whose `check_in ≤ date < check_out`. Sum `tourist_count` + `staff_count` into breakfast/lunch/dinner totals. Provide per-booking override rows (skip meal). Add a "Print kitchen sheet" button that opens a clean print view with large "13+4" style totals.
-
-**Files to create/touch.**
-
-- `src/app/[locale]/(admin)/admin/meals/page.tsx` (new)
-- `src/app/api/meals/route.ts` (GET by date, PATCH overrides)
-- `src/lib/meal-calculator.ts` (helper: booking list → totals)
-- `messages/{en,mn}.json` add `meal.*` keys already scaffolded — extend with `kitchenSheet`, `overrides`, `printSheet`, `noMealsToday`.
-
-**Done when.** Picking a date in the past/future refreshes totals; print preview shows clean layout at body font-size ~32px.
-
-### Day 10 — Guests Directory
-
-Searchable table with linked-booking drawer. New route `/admin/guests`, API under `/api/guests`, existing `guests` table in DB.
-
-### Day 11 — Finance
-
-Transaction CRUD + **CSV upload via Papa Parse**. Preview parsed rows, let admin map columns (date / amount / description), confirm → bulk insert into `transactions`. Add Recharts line for month-over-month and pie for expense categories.
-
-### Day 12 — Public Website
-
-`src/app/[locale]/(website)/` route group. Pages: landing, `gers/`, `programs/`, `gallery/`, `booking/`. Booking form submits to `/api/bookings` with `source: "website"` and `status: "tentative"`.
-
-### Day 13 — CMS + Realtime
-
-`site_content` table editor. Wire Supabase realtime so ger availability toggled in admin updates the public site live.
-
-### Day 14 — QA + Deploy
-
-Walk through every flow. Deploy to Vercel + Supabase Cloud. Create real admin account for the team.
+1. **Read Next 16 docs in `node_modules/next/dist/docs/` before writing routes** — App Router conventions differ from older Next versions.
+2. **Base UI, not Radix.** No `asChild` on `<Button>`.
+3. **Always guard Supabase env** in server components. Use `isEnvConfigured()` pattern from `src/app/[locale]/(admin)/admin/page.tsx`.
+4. **i18n first.** No hardcoded English. Update `en.json` + `mn.json` together.
+5. **Never commit `.env.local`.** Never log attachment base64. Inbox list endpoint strips `attachment_base64` — keep it that way.
+6. **Type-check before declaring done.** `npx tsc --noEmit` should pass.
 
 ---
 
-## 6. Guardrails (paste these to the next Claude)
+## Cost & complexity notes
 
-Hard rules this project has learned the hard way:
-
-1. **Read `node_modules/next/dist/docs/` before writing Next boilerplate.** Next 16 conventions differ from training data. `AGENTS.md` in the repo root enforces this.
-2. **Base UI, not Radix.** No `asChild` on `<Button>`. Use `buttonVariants({ variant, size })` on `<Link>`, or the `render={<Button />}` slot pattern on Base UI triggers.
-3. **Server components vs client components.** Pages that use state/events need `"use client"`. Async data-fetching pages stay server components and use `getTranslations` from `next-intl/server` plus `await createClient()` from `@/lib/supabase/server`.
-4. **Always guard Supabase env.** Any server component that calls `createClient()` must check `isEnvConfigured()` first (see `src/app/[locale]/(admin)/admin/page.tsx` for the pattern) or wrap in try/catch. Placeholder strings (`your-supabase-*`) count as unconfigured.
-5. **i18n first.** No hardcoded English. Every user-visible string goes through `t()`. Both `messages/en.json` and `messages/mn.json` must be updated in the same commit.
-6. **Never commit `.env.local`.** Never log attachment base64. Inbox list endpoint strips `attachment_base64` — keep it that way.
-7. **Type-check before declaring done.** Run `npx tsc --noEmit`. Zero errors is the bar.
+- PDF parsing defaults to **Haiku 4.5** (~5× cheaper than Sonnet) with prompt-caching on the system prompt. Token usage is shown in the UI after each parse.
+- `ANTHROPIC_API_KEY` is optional. If you don't need PDF auto-parse, leave it as the placeholder and add bookings manually from the Bookings page.
+- The **Inbox + Gmail webhook** is a separable subsystem. If you never use it, you can delete `src/app/api/email-intake/`, `src/app/[locale]/(admin)/admin/inbox/`, and `supabase/gmail-forwarder/` with no impact on the rest.
 
 ---
 
-## 7. Quickstart Prompt for the Other Laptop
+## What's next
 
-Copy-paste this into the new Claude session:
-
-> I'm continuing the Tsaidam Camp project on a new laptop. Read the AGENTS.md in the repo root, confirm `.env.local` has real Supabase + Anthropic keys (not placeholders), run `npm run dev`, and visit `/en/admin` to verify the dashboard shows live stats (no amber "not configured" banner). Then pick up the next task: **Day 9 — Meals Calculator**. The scope and finish line for that task are in `HANDOFF.md` at the repo root.
+See `ROADMAP.md` — priorities in order:
+1. Online booking form on the public site
+2. Decide on the empty Settings page (build or hide)
+3. Supabase Storage for ger photos
+4. Vercel deployment

@@ -1,6 +1,5 @@
 # Roadmap — Tsaidam Camp
 
-This file is updated at the end of every session.
 Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 
 ---
@@ -10,30 +9,28 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 ### Admin App
 | Feature | Status | Notes |
 |---|---|---|
-| Gers management (CRUD + canvas) | ✅ | Drag-reposition, size-by-sqm |
-| Bookings management | ✅ | Full form, CSV import, status/payment |
-| Ger-to-booking assignment (drag-drop) | ✅ | Unassigned tray, conflict detection |
-| Bed configuration per ger | ✅ | JSONB beds, custom sizes |
-| Undo-toast delete (bookings) | ✅ | 6s window, optimistic |
-| Undo-toast delete (gers) | ✅ | 6s window, optimistic |
-| Quick-book button per ger row | ✅ | Auto-opens booking dialog |
-| Slim booking dialogs (Essentials + Advanced) | ✅ | Applied to bookings-list + gers page |
-| Undo-toast delete (operators) | ✅ | Optimistic + 6s undo, cascade warning in toast |
-| Undo-toast delete (guests) | ✅ | Optimistic + 6s undo |
-| Undo-toast delete (finance/transactions) | ✅ | Signed amount + description in toast |
-| Guests management page | ✅ | Basic CRUD (page already existed) |
-| Dashboard UI/UX redesign | ✅ | Colored stat cards, progress bar, enriched lists |
-| Calendar view (per-ger Gantt) | ✅ | Month view, one row per ger + Unassigned section |
-| Finance page improvements | ✅ | Accent-badge KPIs + MoM delta, area chart, income pie, monthly breakdown list |
-| Notifications / alerts | ✅ | Header bell: arrivals/departures today + overdue payments, 2-min polling |
-| Bulk operations | ⬜ | Multi-select bookings for status updates |
+| Dashboard (live KPIs, occupancy, upcoming, pending payments) | ✅ | |
+| Bookings (CRUD + filter + CSV import + undo-toast delete) | ✅ | |
+| Gers (CRUD + drag-drop canvas + beds/area + availability) | ✅ | |
+| Ger ↔ booking assignment (drag/drop, conflict check) | ✅ | |
+| Calendar (per-ger Gantt, month view + unassigned tray) | ✅ | |
+| Meals (daily calculator, printable kitchen sheet) | ✅ | |
+| Guests (search, linked to bookings) | ✅ | |
+| Operators (CRM + booking count, undo-toast) | ✅ | |
+| Finance (transactions CRUD, CSV import, charts) | ✅ | |
+| Notifications bell (arrivals / departures / overdue) | ✅ | 2-min polling |
+| Website CMS (gallery / promotions / news) | ✅ | |
+| Inbox — Gmail PDF forwarder + intake table | ✅ | Optional; requires Gmail Apps Script + AI key |
+| Upload-PDF — direct PDF → Claude → review → bulk import | ✅ | Gracefully degrades when AI key absent |
+| Settings page | ⬜ | Empty placeholder route — hide or build |
+| Bulk ops (multi-select bookings) | ⬜ | Nice-to-have |
 
 ### Multi-language
 | Feature | Status | Notes |
 |---|---|---|
 | EN routing + strings | ✅ | |
 | MN routing + strings | ✅ | |
-| Remaining i18n gaps | ⬜ | Audit all pages for missing keys |
+| i18n audit (catch missing keys) | ⬜ | |
 
 ---
 
@@ -41,19 +38,12 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 
 | Feature | Status | Notes |
 |---|---|---|
-| Landing page | ✅ | Hero carousel, bento grid, experience, testimonials, programs, find-us, FAQ, footer — fully bilingual |
-| `/api/public/gers` (read) | ✅ | Anon RLS; only `is_available=true` |
-| `/api/public/gallery` (read) | ✅ | Anon RLS; ordered by `sort_order` |
-| `/api/public/promotions` (read) | ✅ | Filters expired (`ends_on >= today`) |
-| `/api/public/news` + `/news/[slug]` (read) | ✅ | Only `is_published=true` |
-| `/api/public/availability` (read) | ✅ | `?from=&to=` returns total/available/occupied |
-| `/api/public/bookings` (write) | ✅ | Locked schema, source="website", status="tentative" |
-| CORS headers for public API | ✅ | Origin from `PUBLIC_WEB_ORIGIN` env, default `*` |
-| Website CMS (gallery / promotions / news) | ✅ | Admin tabs at /admin/website, full CRUD + undo-toast |
-| Online booking form | ⬜ | Guest self-service (next priority) |
-| Availability calendar (public) | ⬜ | Shows available gers by date |
-| Booking confirmation emails | ⬜ | Requires email service integration |
-| Payment integration | ⬜ | QPay or similar Mongolian gateway |
+| Landing page (hero, accommodations, experience, testimonials, programs, find-us, FAQ, footer) | ✅ | Fully bilingual |
+| `/api/public/gers`, `/gallery`, `/promotions`, `/news`, `/availability`, `/bookings` | ✅ | RLS-locked |
+| Online booking form | ✅ | `/[locale]/booking` — soft availability probe + POST to `/api/public/bookings` (forces `source=website`, `status=tentative`). Hero search bar + navbar + FloatCta all wired to it. |
+| Public availability calendar | ⬜ | |
+| Booking confirmation emails | ⬜ | Needs Resend or similar |
+| Payment integration (QPay) | ⬜ | |
 
 ---
 
@@ -61,26 +51,31 @@ Status: ✅ Done | 🔄 In Progress | ⬜ Pending | 🚫 Blocked
 
 | Feature | Status | Notes |
 |---|---|---|
-| Supabase schema + RLS | ✅ | Migrations 001–005 applied (005 applied 2026-04-29) |
-| Atomic booking RPC | ✅ | Migration 003 |
-| Beds + area columns | ✅ | Migration 004 |
-| Gallery / promotions / news tables + RLS | ✅ | Migration 005 |
-| Supabase Storage (images) | ⬜ | Ger photos |
-| Vercel deployment | ⬜ | CI/CD pipeline |
-| Environment variables (prod) | ⬜ | Supabase prod keys |
-| Auto-push to GitHub | ✅ | Claude Code Stop hook configured |
+| Supabase schema + RLS (migrations 001–005) | ✅ | |
+| Atomic booking RPC + overlap-prevention trigger | ✅ | |
+| Supabase Storage for ger photos | ⬜ | Currently uses Unsplash |
+| Vercel deployment | ⬜ | Not started — local dev only |
+| Auto-push to GitHub | ✅ | Claude Code Stop hook |
 
 ---
 
-## Next Up (Priority Order)
-1. ⬜ Online booking form + public availability calendar
-2. ⬜ QPay payment integration
-3. ⬜ Booking confirmation emails (Resend)
-4. ⬜ Supabase Storage for ger photos (replace Unsplash placeholders on landing page)
-5. ⬜ Vercel production deployment + custom domain
-6. ⬜ Bulk operations (multi-select bookings for status updates)
-7. ⬜ i18n audit (find missing keys across all admin pages)
+## Cost & complexity notes
+
+- **PDF parser** defaults to `claude-haiku-4-5-20251001` (Haiku 4.5). ~5× cheaper than Sonnet. Override via `ANTHROPIC_PDF_MODEL` env var if accuracy issues come up.
+- `ANTHROPIC_API_KEY` is **optional**. Without it the Upload-PDF page shows a friendly message; the rest of the app works as normal.
+- Inbox + email-intake is a separable subsystem. If you never use it, the `/api/email-intake/` route and `/admin/inbox` page can be deleted with no impact on the core.
 
 ---
 
-*Last updated: 2026-04-29*
+## Next Up (priority order)
+
+1. ⬜ Public availability calendar (visual month view of free dates)
+2. ⬜ Supabase Storage for ger photos
+3. ⬜ Vercel deployment + custom domain
+4. ⬜ QPay payment integration
+5. ⬜ Booking confirmation emails (Resend)
+6. ⬜ Bulk operations + i18n audit
+
+---
+
+*Last updated: 2026-05-13*

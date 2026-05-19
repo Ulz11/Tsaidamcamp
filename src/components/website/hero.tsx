@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { format, addDays } from "date-fns";
 
 const SLIDES = [
@@ -15,7 +16,13 @@ const SLIDE_INTERVAL = 5_000;
 
 export function Hero() {
   const t = useTranslations("website");
+  const router = useRouter();
+  const locale = useLocale();
   const [active, setActive] = useState(0);
+
+  const checkinRef = useRef<HTMLInputElement>(null);
+  const checkoutRef = useRef<HTMLInputElement>(null);
+  const guestsRef = useRef<HTMLSelectElement>(null);
 
   // Auto-advance
   useEffect(() => {
@@ -33,9 +40,11 @@ export function Hero() {
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    document
-      .getElementById("accommodations")
-      ?.scrollIntoView({ behavior: "smooth" });
+    const ci = checkinRef.current?.value || defaultCheckin;
+    const co = checkoutRef.current?.value || defaultCheckout;
+    const g = guestsRef.current?.value || "2";
+    const qs = new URLSearchParams({ checkin: ci, checkout: co, guests: g });
+    router.push(`/booking?${qs.toString()}`, { locale });
   };
 
   return (
@@ -119,6 +128,7 @@ export function Hero() {
         >
           <BookingField label={t("booking.checkin")} className="md:pr-6">
             <input
+              ref={checkinRef}
               type="date"
               defaultValue={defaultCheckin}
               className="w-full bg-transparent text-base text-white outline-none [color-scheme:dark]"
@@ -129,6 +139,7 @@ export function Hero() {
             className="md:border-l md:border-white/20 md:px-6"
           >
             <input
+              ref={checkoutRef}
               type="date"
               defaultValue={defaultCheckout}
               className="w-full bg-transparent text-base text-white outline-none [color-scheme:dark]"
@@ -139,6 +150,7 @@ export function Hero() {
             className="md:border-l md:border-white/20 md:px-6"
           >
             <select
+              ref={guestsRef}
               defaultValue="2"
               className="w-full bg-transparent text-base text-white outline-none [&_option]:bg-[var(--color-tsaidam-forest)] [&_option]:text-white"
             >

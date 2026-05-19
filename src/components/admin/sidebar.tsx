@@ -12,7 +12,6 @@ import {
   Building2,
   Wallet,
   Globe,
-  Settings,
   FileUp,
   Inbox,
   LogOut,
@@ -32,7 +31,6 @@ const navItems = [
   { key: "uploadPdf", href: "/admin/upload-pdf", icon: FileUp },
   { key: "finance", href: "/admin/finance", icon: Wallet },
   { key: "website", href: "/admin/website", icon: Globe },
-  { key: "settings", href: "/admin/settings", icon: Settings },
 ];
 
 export function AdminSidebar() {

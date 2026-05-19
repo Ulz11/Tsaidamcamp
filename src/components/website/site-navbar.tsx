@@ -80,8 +80,8 @@ export function SiteNavbar() {
             <Languages className="h-3.5 w-3.5" />
             {locale === "mn" ? "EN" : "MN"}
           </button>
-          <a
-            href="#accommodations"
+          <Link
+            href="/booking"
             className={`rounded-sm border px-5 py-2 text-xs font-medium uppercase tracking-[0.08em] transition-all ${
               scrolled
                 ? "border-[var(--color-tsaidam-forest)] bg-[var(--color-tsaidam-forest)] text-white hover:bg-[var(--color-tsaidam-forest-md)]"
@@ -89,7 +89,7 @@ export function SiteNavbar() {
             }`}
           >
             {t("nav.booking")}
-          </a>
+          </Link>
         </div>
 
         <button
@@ -141,13 +141,13 @@ export function SiteNavbar() {
           <Languages className="h-4 w-4" />
           {locale === "mn" ? "English" : "Монгол"}
         </button>
-        <a
-          href="#accommodations"
+        <Link
+          href="/booking"
           onClick={() => setDrawerOpen(false)}
           className="mt-2 rounded-sm bg-[var(--color-tsaidam-clay)] px-10 py-3 text-sm font-medium uppercase tracking-[0.1em] text-white hover:bg-[var(--color-tsaidam-clay-lt)]"
         >
           {t("nav.booking")}
-        </a>
+        </Link>
       </div>
     </>
   );

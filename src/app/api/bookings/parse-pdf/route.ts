@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAnthropic, PDF_PARSE_MODEL } from "@/lib/anthropic";
+import { getAnthropic, hasAnthropicKey, PDF_PARSE_MODEL } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/supabase/auth-guard";
 
@@ -110,6 +110,17 @@ export async function POST(request: NextRequest) {
     const supabaseAuth = await createClient();
     const auth = await requireUser(supabaseAuth);
     if (auth instanceof NextResponse) return auth;
+
+    if (!hasAnthropicKey()) {
+      return NextResponse.json(
+        {
+          error:
+            "AI parsing is disabled. Set ANTHROPIC_API_KEY in .env.local, or add bookings manually from the Bookings page.",
+          code: "ai_disabled",
+        },
+        { status: 503 }
+      );
+    }
 
     // -----------------------------------------------------------------------
     // Two input shapes:

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import Link from "next/link";
 import {
   CheckCircle2,
   FileText,
@@ -82,6 +83,7 @@ type Operator = { id: string; name: string };
 
 export default function UploadPdfPage() {
   const t = useTranslations("admin.uploadPdf");
+  const locale = useLocale();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -89,6 +91,7 @@ export default function UploadPdfPage() {
   const [parsing, setParsing] = useState(false);
   const [parsed, setParsed] = useState<ParseResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [aiDisabled, setAiDisabled] = useState(false);
 
   const [rows, setRows] = useState<ParsedBooking[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -151,6 +154,9 @@ export default function UploadPdfPage() {
 
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 503 && data.code === "ai_disabled") {
+          setAiDisabled(true);
+        }
         setError(data.error || t("parseError"));
         return;
       }
@@ -345,9 +351,29 @@ export default function UploadPdfPage() {
               </div>
             )}
 
-            {error && (
+            {error && !aiDisabled && (
               <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
                 {error}
+              </div>
+            )}
+
+            {aiDisabled && (
+              <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-900 dark:bg-amber-950">
+                <div className="font-medium text-amber-900 dark:text-amber-200">
+                  AI parsing is off
+                </div>
+                <p className="mt-1 text-amber-900/80 dark:text-amber-200/80">
+                  Add <code className="font-mono">ANTHROPIC_API_KEY</code> to{" "}
+                  <code className="font-mono">.env.local</code> and restart the
+                  dev server to enable PDF parsing. In the meantime, you can add
+                  bookings by hand.
+                </p>
+                <Link
+                  href={`/${locale}/admin/bookings`}
+                  className="mt-2 inline-flex items-center text-amber-900 underline hover:text-amber-700 dark:text-amber-200"
+                >
+                  Go to Bookings →
+                </Link>
               </div>
             )}
           </CardContent>
